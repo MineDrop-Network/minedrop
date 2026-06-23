@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rules — MineDrop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lime: #C8FF00;
+      --orange: #FF6B00;
+      --purple: #8B5CF6;
+      --pink: #FF2D78;
+      --void: #0A0A0F;
+      --void2: #111118;
+      --void3: #1A1A26;
+      --white: #F0F0F0;
+      --muted: #6B6B8A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .pixel { font-family: 'Press Start 2P', monospace; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,255,0,0.1);
+    }
+
+    .nav-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
+      color: var(--lime);
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 20px rgba(200,255,0,0.5);
+      text-decoration: none;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--lime); }
+
+    .nav-cta {
+      background: var(--lime);
+      color: var(--void);
+      border: none;
+      padding: 0.6rem 1.4rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
+    .nav-cta:hover { transform: scale(1.05); background: #d9ff33; }
+
+    /* PAGE HERO */
+    .page-hero {
+      padding: 10rem 2rem 5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(200,255,0,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .page-eyebrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--orange);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1.2rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s ease forwards;
+    }
+
+    .page-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1.4rem, 4vw, 2.8rem);
+      line-height: 1.4;
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.4s ease forwards;
+    }
+    .page-title .accent-lime { color: var(--lime); }
+
+    .page-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* RULES CONTENT */
+    .rules-section {
+      padding: 2rem 2rem 3rem;
+    }
+
+    .rules-container {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .rule-card {
+      background: var(--void2);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 2rem 2.2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.25s;
+    }
+    .rule-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .rule-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent, var(--lime));
+    }
+    .rule-card:hover {
+      border-color: rgba(255,255,255,0.13);
+      transform: translateY(-3px);
+    }
+
+    .rule-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .rule-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .rule-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      line-height: 1.6;
+      color: var(--accent, var(--lime));
+    }
+
+    .rule-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .rule-list li {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+      padding-left: 1.4rem;
+      position: relative;
+    }
+
+    .rule-list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent, var(--lime));
+      font-size: 0.75rem;
+      top: 0.12rem;
+    }
+
+    .rule-list li strong {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    /* DIVIDER */
+    .rules-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,255,0,0.15), transparent);
+      margin: 0.5rem 0;
+    }
+
+    /* FOOTER NOTE */
+    .rules-footer {
+      max-width: 820px;
+      margin: 3rem auto 0;
+      background: linear-gradient(135deg, rgba(200,255,0,0.05), rgba(139,92,246,0.05));
+      border: 1px solid rgba(200,255,0,0.15);
+      padding: 2rem 2.2rem;
+      text-align: center;
+    }
+    .rules-footer .pixel {
+      font-size: 0.6rem;
+      color: var(--lime);
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+    .rules-footer p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .rules-footer p em {
+      color: var(--white);
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    /* TICKER */
+    .ticker {
+      background: var(--lime);
+      color: var(--void);
+      padding: 0.6rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 22s linear infinite;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--void2);
+      border-top: 1px solid rgba(200,255,0,0.08);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.2rem;
+      color: var(--lime);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 20px rgba(200,255,0,0.4);
+    }
+    .footer-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">MineDrop</a>
+  <ul class="nav-links">
+    <li><a href="news.html">News</a></li>
+    <li><a href="rules.html" class="active">Rules</a></li>
+    <li><a href="store.html">Store</a></li>
+    <li><a href="discord.html">Discord</a></li>
+  </ul>
+  <button class="nav-cta" onclick="window.location.href='play.html'">PLAY NOW</button>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true" style="margin-top: 0; padding-top: 4.4rem;">
+  <span class="ticker-inner">
+    PLAY FAIR &nbsp;•&nbsp; NO HACKING &nbsp;•&nbsp; NO EXPLOITING &nbsp;•&nbsp; RESPECT EVERYONE &nbsp;•&nbsp; STAFF DECISIONS ARE FINAL &nbsp;•&nbsp; HAVE FUN &nbsp;•&nbsp;
+    PLAY FAIR &nbsp;•&nbsp; NO HACKING &nbsp;•&nbsp; NO EXPLOITING &nbsp;•&nbsp; RESPECT EVERYONE &nbsp;•&nbsp; STAFF DECISIONS ARE FINAL &nbsp;•&nbsp; HAVE FUN &nbsp;•&nbsp;
+  </span>
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <span class="page-eyebrow">📋 Server Guidelines</span>
+  <h1 class="page-title pixel">MineDrop <span class="accent-lime">Network Rules</span></h1>
+  <p class="page-sub">These rules exist to keep the server fair, competitive, and enjoyable for everyone. Read them. Know them. Play by them.</p>
+</div>
+
+<!-- RULES -->
+<section class="rules-section">
+  <div class="rules-container">
+
+    <!-- 1 -->
+    <div class="rule-card" style="--accent: #C8FF00;">
+      <div class="rule-header">
+        <span class="rule-icon">🤝</span>
+        <span class="rule-title">Respect Everyone</span>
+      </div>
+      <ul class="rule-list">
+        <li>No harassment, hate speech, or severe toxicity of any kind.</li>
+        <li>Friendly banter is allowed — but do <strong>NOT</strong> intentionally ruin the experience for others.</li>
+      </ul>
+    </div>
+
+    <!-- 2 -->
+    <div class="rule-card" style="--accent: #FF2D78;">
+      <div class="rule-header">
+        <span class="rule-icon">🚫</span>
+        <span class="rule-title">No Cheating or Exploiting</span>
+      </div>
+      <ul class="rule-list">
+        <li>Hacked clients, macros, dupes, and automation are <strong>strictly prohibited</strong>.</li>
+        <li>Exploiting bugs to gain an unfair advantage will result in a ban.</li>
+        <li>Found a bug? Report it to staff immediately — don't abuse it.</li>
+      </ul>
+    </div>
+
+    <!-- 3 -->
+    <div class="rule-card" style="--accent: #8B5CF6;">
+      <div class="rule-header">
+        <span class="rule-icon">💬</span>
+        <span class="rule-title">Keep Chat Clean</span>
+      </div>
+      <ul class="rule-list">
+        <li>No spam, NSFW content, or advertising other servers, services, or Discord servers.</li>
+      </ul>
+    </div>
+
+    <!-- 4 -->
+    <div class="rule-card" style="--accent: #FF6B00;">
+      <div class="rule-header">
+        <span class="rule-icon">⚔️</span>
+        <span class="rule-title">Fair Stealing & Raiding</span>
+      </div>
+      <ul class="rule-list">
+        <li>Stealth raids and bounties are <strong>intended gameplay</strong> — use them strategically.</li>
+        <li>Exploiting bugs to bypass base protections is <strong>forbidden</strong>.</li>
+        <li>Real-money scams are <strong>strictly prohibited</strong> and will result in a permanent ban.</li>
+      </ul>
+    </div>
+
+    <!-- 5 -->
+    <div class="rule-card" style="--accent: #00D4FF;">
+      <div class="rule-header">
+        <span class="rule-icon">🔄</span>
+        <span class="rule-title">Safe Trading</span>
+      </div>
+      <ul class="rule-list">
+        <li>Use <strong>approved in-game trading systems only</strong>.</li>
+        <li>Cross-trading with other games or real money is <strong>NOT</strong> allowed under any circumstances.</li>
+      </ul>
+    </div>
+
+    <!-- 6 -->
+    <div class="rule-card" style="--accent: #22C55E;">
+      <div class="rule-header">
+        <span class="rule-icon">🏰</span>
+        <span class="rule-title">Account & Clan Responsibility</span>
+      </div>
+      <ul class="rule-list">
+        <li>You are <strong>fully responsible</strong> for your own account and everything that happens on it.</li>
+        <li>Items lost due to account sharing will <strong>NOT</strong> be refunded — no exceptions.</li>
+        <li>Clan leaders are accountable for the actions of their members.</li>
+        <li>Alt-farming or coordinated exploits can lead to <strong>clan-wide punishments</strong>.</li>
+      </ul>
+    </div>
+
+    <!-- 7 -->
+    <div class="rule-card" style="--accent: #F59E0B;">
+      <div class="rule-header">
+        <span class="rule-icon">🛡️</span>
+        <span class="rule-title">Respect Staff & Common Sense</span>
+      </div>
+      <ul class="rule-list">
+        <li>Staff decisions are <strong>final</strong> in serious situations — do not argue or harass staff members.</li>
+        <li>False reports or impersonating staff will lead to punishment.</li>
+        <li>If something gives an unfair advantage or harms the community, it is <strong>probably not allowed</strong> — use common sense.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MineDrop</div>
+  <p class="footer-note">Not affiliated with Mojang or Microsoft. MineDrop © 2025.</p>
+  <p class="footer-note" style="color: rgba(107,107,138,0.5);">Discord • Twitter • YouTube</p>
+</footer>
+
+<script>
+  /* Scroll reveal */
+  const cards = document.querySelectorAll('.rule-card');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  cards.forEach(c => obs.observe(c));
+</script>
+</body>
+</html>

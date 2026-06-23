@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MineDrop — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --lime: #C8FF00; --orange: #FF6B00; --purple: #8B5CF6;
+      --cyan: #00D4FF; --green: #22C55E;
+      --void: #0A0A0F; --void2: #111118; --void3: #1A1A26; --void4: #20202E;
+      --white: #F0F0F0; --muted: #6B6B8A;
+      --border: rgba(255,255,255,0.07); --danger: #FF3B3B;
+      --mono: 'JetBrains Mono', monospace; --pixel: 'Press Start 2P', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--void); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen { position: fixed; inset: 0; z-index: 1000; background: var(--void); display: flex; align-items: center; justify-content: center; }
+    #login-screen.hidden { display: none; }
+    .login-box { width: 380px; background: var(--void2); border: 1px solid var(--border); padding: 2.8rem 2.4rem; display: flex; flex-direction: column; gap: 1.6rem; position: relative; animation: fadeUp 0.4s ease; }
+    .login-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--lime); box-shadow: 0 0 20px rgba(200,255,0,0.4); }
+    .login-logo { font-family: var(--pixel); font-size: 1rem; color: var(--lime); text-shadow: 0 0 16px rgba(200,255,0,0.5); text-align: center; }
+    .login-subtitle { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; text-align: center; margin-top: -0.8rem; }
+    .login-error { font-family: var(--mono); font-size: 0.65rem; color: var(--danger); background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.25); padding: 0.6rem 0.8rem; display: none; }
+    .login-error.show { display: block; }
+    .login-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .login-field label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    .login-field input { background: var(--void); border: 1px solid var(--border); color: var(--white); font-family: var(--mono); font-size: 0.75rem; padding: 0.65rem 0.8rem; outline: none; width: 100%; transition: border-color 0.15s; }
+    .login-field input:focus { border-color: rgba(200,255,0,0.45); }
+    .btn-login { background: var(--lime); color: var(--void); border: none; font-family: var(--pixel); font-size: 0.6rem; padding: 0.9rem; cursor: pointer; width: 100%; transition: background 0.15s, transform 0.1s; clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); }
+    .btn-login:hover { background: #d9ff33; }
+    .btn-login:active { transform: scale(0.98); }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-hint { font-family: var(--mono); font-size: 0.55rem; color: var(--muted); text-align: center; }
+
+    /* ── TOPBAR ── */
+    .topbar { position: sticky; top: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 54px; background: var(--void2); border-bottom: 1px solid var(--border); }
+    .topbar-left { display: flex; align-items: center; gap: 1.4rem; }
+    .topbar-logo { font-family: var(--pixel); font-size: 0.7rem; color: var(--lime); text-shadow: 0 0 12px rgba(200,255,0,0.5); }
+    .topbar-badge { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; color: var(--void); background: var(--danger); padding: 0.25rem 0.55rem; letter-spacing: 0.08em; }
+    .topbar-right { display: flex; align-items: center; gap: 1.2rem; }
+    .status-dot { display: flex; align-items: center; gap: 0.45rem; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+    .status-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .topbar-user { font-family: var(--mono); font-size: 0.68rem; color: var(--white); background: var(--void3); border: 1px solid var(--border); padding: 0.3rem 0.8rem; }
+    .btn-logout { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); background: transparent; border: 1px solid var(--border); padding: 0.3rem 0.8rem; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+    .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; flex: 1; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: 220px; flex-shrink: 0; background: var(--void2); border-right: 1px solid var(--border); padding: 1.4rem 0; display: flex; flex-direction: column; gap: 0.2rem; }
+    .sidebar-section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; padding: 0.8rem 1.4rem 0.4rem; margin-top: 0.6rem; }
+    .sidebar-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 1.4rem; font-family: var(--mono); font-size: 0.7rem; color: var(--muted); cursor: pointer; border-left: 2px solid transparent; transition: color 0.15s, background 0.15s, border-color 0.15s; user-select: none; }
+    .sidebar-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+    .sidebar-item.active { color: var(--lime); border-left-color: var(--lime); background: rgba(200,255,0,0.05); }
+    .sidebar-item .icon { font-size: 0.85rem; width: 16px; text-align: center; }
+    .sidebar-item .badge-count { margin-left: auto; font-size: 0.55rem; background: var(--orange); color: var(--void); padding: 0.15rem 0.4rem; font-weight: 700; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; padding: 2rem 2.4rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+    .page-title-block .page-eyebrow { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .page-title-block h1 { font-family: var(--pixel); font-size: 1rem; color: var(--white); line-height: 1.5; }
+    .page-title-block h1 .hl { color: var(--lime); }
+    .header-actions { display: flex; gap: 0.8rem; align-items: center; }
+
+    /* ── BUTTONS ── */
+    .btn { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--mono); font-size: 0.68rem; font-weight: 700; padding: 0.6rem 1.1rem; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; letter-spacing: 0.04em; white-space: nowrap; }
+    .btn-primary { background: var(--lime); color: var(--void); border-color: var(--lime); }
+    .btn-primary:hover { background: #d9ff33; }
+    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+    .btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+
+    /* ── STAT STRIP ── */
+    .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .stat-card { background: var(--void2); padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .stat-label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    .stat-value { font-family: var(--pixel); font-size: 1.1rem; color: var(--white); line-height: 1.3; }
+    .stat-value.lime{color:var(--lime)} .stat-value.orange{color:var(--orange)} .stat-value.cyan{color:var(--cyan)} .stat-value.green{color:var(--green)}
+    .stat-delta { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+    .stat-delta.up { color: var(--green); }
+
+    /* ── PANEL ── */
+    .panel { background: var(--void2); border: 1px solid var(--border); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); gap: 1rem; }
+    .panel-title { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; color: var(--white); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.6rem; }
+    .panel-title .dot { width: 6px; height: 6px; background: var(--lime); flex-shrink: 0; }
+    .panel-body { padding: 1.4rem; }
+
+    /* ── CATEGORIES ── */
+    .category-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    /* Update this existing class */
+    .category-item {
+       background: var(--void3);
+       border: 1px solid var(--border);
+        display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto; /* Changed to fit 3 text fields */
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  transition: border-color 0.2s;
+}
+
+/* Add this new class below it */
+.cat-img-preview {
+  width: 42px; height: 42px;
+  background: var(--void);
+  border: 1px solid var(--border);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+    .category-item:hover { border-color: rgba(255,255,255,0.12); }
+    .category-icon-picker {
+      position: relative;
+    }
+    .cat-icon-display {
+      width: 42px; height: 42px;
+      background: var(--void);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .cat-icon-display:hover { border-color: var(--lime); }
+    .cat-icon-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 50;
+      background: var(--void2);
+      border: 1px solid rgba(200,255,0,0.25);
+      padding: 0.6rem;
+      display: none;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0.3rem;
+      width: 260px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .cat-icon-dropdown.open { display: grid; }
+    .cat-icon-opt {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .cat-icon-opt:hover { border-color: var(--lime); background: rgba(200,255,0,0.08); }
+    .category-actions { display: flex; gap: 0.5rem; }
+
+    /* ── PRODUCT CARDS ── */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .product-editor { background: var(--void3); border: 1px solid var(--border); position: relative; transition: border-color 0.2s; }
+    .product-editor.saving { opacity: 0.6; pointer-events: none; }
+    .product-editor-header { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); background: var(--void4); }
+    .product-editor-id { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.1em; }
+    .product-editor-actions { display: flex; gap: 0.5rem; }
+    .icon-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+    .icon-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .icon-btn.danger:hover { color: var(--danger); border-color: rgba(255,59,59,0.4); background: rgba(255,59,59,0.06); }
+    .icon-btn.confirm:hover { color: var(--green); border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
+    .product-editor-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    /* ── FORM ── */
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    input[type="text"], input[type="number"], input[type="password"], textarea, select {
+      background: var(--void); border: 1px solid var(--border); color: var(--white);
+      font-family: var(--mono); font-size: 0.72rem; padding: 0.55rem 0.7rem;
+      width: 100%; outline: none; transition: border-color 0.15s; resize: vertical;
+    }
+    input:focus, textarea:focus, select:focus { border-color: rgba(200,255,0,0.45); }
+    input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.7; }
+    select option { background: var(--void2); }
+
+    .swatch-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .swatch { width: 24px; height: 24px; border: 2px solid transparent; cursor: pointer; transition: transform 0.1s, border-color 0.1s; flex-shrink: 0; }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.selected { border-color: var(--white); transform: scale(1.1); }
+    .emoji-grid { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .emoji-opt { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--void); border: 1px solid var(--border); font-size: 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .emoji-opt:hover { border-color: rgba(255,255,255,0.2); }
+    .emoji-opt.selected { border-color: var(--lime); background: rgba(200,255,0,0.08); }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .toggle-label { font-family: var(--mono); font-size: 0.65rem; color: var(--white); }
+    .toggle { width: 36px; height: 20px; background: var(--void); border: 1px solid var(--border); border-radius: 2px; position: relative; cursor: pointer; transition: background 0.2s, border-color 0.2s; flex-shrink: 0; }
+    .toggle.on { background: rgba(200,255,0,0.15); border-color: rgba(200,255,0,0.4); }
+    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: var(--muted); transition: left 0.2s, background 0.2s; }
+    .toggle.on::after { left: 19px; background: var(--lime); }
+
+    /* ── NEWS ── */
+    .news-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .news-item { background: var(--void3); border: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; align-items: stretch; transition: border-color 0.2s; }
+    .news-drag-handle { padding: 0 0.8rem; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; cursor: grab; border-right: 1px solid var(--border); background: var(--void4); }
+    .news-fields { padding: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .news-fields .field.full { grid-column: 1 / -1; }
+    .news-actions { padding: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 1px solid var(--border); background: var(--void4); justify-content: center; }
+
+    /* ── ADD CARD ── */
+    .add-card { border: 1px dashed rgba(255,255,255,0.1); background: transparent; display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 2rem; cursor: pointer; font-family: var(--mono); font-size: 0.65rem; color: var(--muted); transition: border-color 0.2s, color 0.2s, background 0.2s; min-height: 80px; }
+    .add-card:hover { border-color: rgba(200,255,0,0.3); color: var(--lime); background: rgba(200,255,0,0.03); }
+
+    /* ── TAB SECTIONS ── */
+    .tab-section { display: none; }
+    .tab-section.visible { display: block; }
+
+    /* ── SAVE BAR ── */
+    .save-bar { position: sticky; bottom: 0; background: var(--void2); border-top: 1px solid var(--border); padding: 0.9rem 2.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; z-index: 100; }
+    .save-bar-info { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+    .save-bar-info span { color: var(--lime); font-weight: 700; }
+
+    /* ── SPINNER ── */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.15); border-top-color: var(--lime); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state { display: flex; align-items: center; gap: 0.8rem; padding: 2rem; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+
+    /* ── TOASTS ── */
+    .toast-container { position: fixed; bottom: 5rem; right: 2rem; z-index: 999; display: flex; flex-direction: column; gap: 0.6rem; pointer-events: none; }
+    .toast { font-family: var(--mono); font-size: 0.68rem; padding: 0.65rem 1rem; background: var(--void2); border: 1px solid var(--border); border-left: 3px solid var(--lime); color: var(--white); animation: slideIn 0.25s ease; }
+    .toast.warn { border-left-color: var(--orange); }
+    .toast.error { border-left-color: var(--danger); }
+    @keyframes slideIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:var(--void)} ::-webkit-scrollbar-thumb{background:var(--void3)}
+    @media(max-width:680px){.sidebar{display:none}.main{padding:1.2rem}}
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">MineDrop</div>
+    <div class="login-subtitle">⚙ Admin Panel</div>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" autocomplete="username" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" id="login-btn" onclick="doLogin()">ENTER PANEL</button>
+    <div class="login-hint">Default: admin / password</div>
+  </div>
+</div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">MineDrop</span>
+    <span class="topbar-badge">⚙ Admin</span>
+  </div>
+  <div class="topbar-right">
+    <div class="status-dot" id="server-status">Connected</div>
+    <div class="topbar-user" id="topbar-username">👤 admin</div>
+    <button class="btn-logout" onclick="doLogout()">Log out</button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Content</div>
+    <div class="sidebar-item active" onclick="switchSection('categories',this)"><span class="icon">🗂</span>Categories</div>
+    <div class="sidebar-item" onclick="switchSection('store',this)"><span class="icon">🛒</span>Store Cards</div>
+    <div class="sidebar-item" onclick="switchSection('announcement',this)"><span class="icon">🎉</span>Announcement</div>
+    <div class="sidebar-item" onclick="switchSection('news',this)"><span class="icon">📰</span>Small Posts<span class="badge-count" id="news-badge">0</span></div>
+    <div class="sidebar-item" onclick="switchSection('sidebar-config',this)"><span class="icon">📋</span>Sidebar</div>
+    <div class="sidebar-section-label">Site Config</div>
+    <div class="sidebar-item" onclick="switchSection('nav',this)"><span class="icon">🧭</span>Navigation</div>
+    <div class="sidebar-item" onclick="switchSection('ticker',this)"><span class="icon">📡</span>Ticker Bar</div>
+    <div class="sidebar-item" onclick="switchSection('hero',this)"><span class="icon">🖼</span>Page Heroes</div>
+    <div class="sidebar-section-label">System</div>
+    <div class="sidebar-item" onclick="switchSection('settings',this)"><span class="icon">⚙</span>Settings</div>
+    <div class="sidebar-item" onclick="switchSection('password',this)"><span class="icon">🔑</span>Change Password</div>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main">
+
+    <!-- STAT STRIP -->
+    <div class="stat-strip">
+      <div class="stat-card"><div class="stat-label">Categories</div><div class="stat-value lime" id="stat-cats">—</div><div class="stat-delta">store tabs</div></div>
+      <div class="stat-card"><div class="stat-label">Store Cards</div><div class="stat-value orange" id="stat-cards">—</div><div class="stat-delta">products listed</div></div>
+      <div class="stat-card"><div class="stat-label">Visible Items</div><div class="stat-value cyan" id="stat-visible">—</div><div class="stat-delta">shown to players</div></div>
+      <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value green" id="stat-status">OK</div><div class="stat-delta">all systems</div></div>
+    </div>
+
+    <!-- ── CATEGORIES ── -->
+    <div id="section-categories" class="tab-section visible">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Store Categories</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="addCategory()">+ New Category</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <p style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-bottom:1.2rem;">Categories become the tabs on your store page. Each product is assigned to one category. Click the icon to change it.</p>
+          <div class="category-list" id="category-list">
+            <div class="loading-state"><div class="spinner"></div> Loading categories…</div>
+          </div>
+          <div class="add-card" style="margin-top:1rem;" onclick="addCategory()">+ Add Category</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STORE CARDS ── -->
+    <div id="section-store" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Store Cards</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="addProduct()">+ New Card</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="product-grid" id="product-grid"><div class="loading-state"><div class="spinner"></div> Loading products…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANNOUNCEMENT (FEATURED POST) ── -->
+    <div id="section-announcement" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Featured Announcement</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveAnnouncement()">💾 Save Announcement</button>
+          </div>
+        </div>
+        <div class="panel-body" style="max-width:640px;display:flex;flex-direction:column;gap:1rem;">
+          <div class="field"><label>Banner Emoji / Image URL</label><input type="text" id="ann-banner" value="🎉"></div>
+          <div class="field-row">
+            <div class="field"><label>Tag (e.g. UPDATE, EVENT)</label><input type="text" id="ann-tag"></div>
+            <div class="field"><label>Date</label><input type="text" id="ann-date"></div>
+          </div>
+          <div class="field"><label>Title</label><input type="text" id="ann-title"></div>
+          <div class="field"><label>Excerpt / Description</label><textarea id="ann-desc" rows="3"></textarea></div>
+          <div class="field"><label>Read More Link</label><input type="text" id="ann-link" placeholder="e.g. https://discord.gg/..."></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NEWS (SMALL POSTS) ── -->
+    <div id="section-news" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Small News Posts</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="addNews()">+ New Post</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="news-list" id="news-list"><div class="loading-state"><div class="spinner"></div> Loading posts…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SIDEBAR CONFIG ── -->
+    <div id="section-sidebar-config" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Sidebar Configuration</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveSidebarConfig()">💾 Save Sidebar</button>
+          </div>
+        </div>
+        <div class="panel-body" style="max-width:640px;display:flex;flex-direction:column;gap:1.6rem;">
+          <div>
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--lime);letter-spacing:0.12em;margin-bottom:1rem;">SEASON PROGRESS</div>
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+              <div class="field-row">
+                <div class="field"><label>Percentage (%)</label><input type="number" id="sb-season-pct" min="0" max="100"></div>
+                <div class="field"><label>Status Text</label><input type="text" id="sb-season-text" placeholder="38% complete"></div>
+              </div>
+              <div class="field"><label>Description</label><textarea id="sb-season-desc" rows="2"></textarea></div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:1.6rem;">
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--lime);letter-spacing:0.12em;margin-bottom:1rem;">RECENT CHANGES</div>
+            <div id="changelog-list-editor" style="display:flex;flex-direction:column;gap:0.7rem;"></div>
+            <div class="add-card" style="margin-top:1rem;min-height:50px;padding:1rem;" onclick="addChangelogItem()">+ Add Changelog Item</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:1.6rem;">
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--purple);letter-spacing:0.12em;margin-bottom:1rem;">CALL TO ACTION</div>
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+              <div class="field"><label>Title</label><input type="text" id="sb-cta-title" placeholder="💬 Join the Discord"></div>
+              <div class="field"><label>Description</label><textarea id="sb-cta-desc" rows="2"></textarea></div>
+              <div class="field"><label>Button Text</label><input type="text" id="sb-cta-btn" placeholder="JOIN NOW →"></div>
+              <div class="field"><label>Button Link</label><input type="text" id="sb-cta-link" placeholder="discord.html"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NAV ── -->
+    <div id="section-nav" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Navigation Links</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveNav()">💾 Save Nav</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:0.7rem;max-width:520px;" id="nav-links-list"></div>
+          <div class="add-card" style="margin-top:1rem;max-width:520px;" onclick="addNavLink()">+ Add nav link</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TICKER ── -->
+    <div id="section-ticker" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Ticker Bar</div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveTicker()">💾 Save Ticker</button>
+          </div>
+        </div>
+        <div class="panel-body" style="max-width:640px;display:flex;flex-direction:column;gap:1rem;">
+          <div class="field"><label>Ticker Text</label><textarea id="ticker-text" rows="4"></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>Background Color</label><input type="text" id="ticker-bg"></div>
+            <div class="field"><label>Text Color</label><input type="text" id="ticker-color"></div>
+          </div>
+          <div class="field"><label>Speed (seconds per cycle)</label><input type="number" id="ticker-speed" min="5" max="120"></div>
+          <div class="toggle-row">
+            <span class="toggle-label">Ticker visible</span>
+            <div class="toggle" id="ticker-visible-toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HERO ── -->
+    <div id="section-hero" class="tab-section">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Page Heroes</div>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:1.6rem;">
+          <div>
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--lime);letter-spacing:0.12em;margin-bottom:1rem;">STORE PAGE</div>
+            <div style="max-width:640px;display:flex;flex-direction:column;gap:0.8rem;">
+              <div class="field"><label>Eyebrow</label><input type="text" id="store-eyebrow"></div>
+              <div class="field"><label>Title</label><input type="text" id="store-title"></div>
+              <div class="field"><label>Accent phrase (highlighted in lime)</label><input type="text" id="store-accent"></div>
+              <div class="field"><label>Subtitle</label><textarea rows="3" id="store-subtitle"></textarea></div>
+              <button class="btn btn-primary" style="align-self:flex-start" onclick="saveHero('store')">💾 Save Store Hero</button>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:1.6rem;">
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--lime);letter-spacing:0.12em;margin-bottom:1rem;">NEWS PAGE</div>
+            <div style="max-width:640px;display:flex;flex-direction:column;gap:0.8rem;">
+              <div class="field"><label>Eyebrow</label><input type="text" id="news-eyebrow"></div>
+              <div class="field"><label>Title</label><input type="text" id="news-title"></div>
+              <div class="field"><label>Accent phrase</label><input type="text" id="news-accent"></div>
+              <div class="field"><label>Subtitle</label><textarea rows="3" id="news-subtitle"></textarea></div>
+              <button class="btn btn-primary" style="align-self:flex-start" onclick="saveHero('news')">💾 Save News Hero</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="section-settings" class="tab-section">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><div class="dot"></div>Settings</div></div>
+        <div class="panel-body" style="max-width:480px;display:flex;flex-direction:column;gap:1.2rem;">
+          <div class="field"><label>Site Title</label><input type="text" id="setting-title"></div>
+          <div class="toggle-row">
+            <span class="toggle-label">Maintenance mode</span>
+            <div class="toggle" id="toggle-maintenance" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Store visible to players</span>
+            <div class="toggle" id="toggle-store-visible" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <button class="btn btn-primary" style="align-self:flex-start" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHANGE PASSWORD ── -->
+    <div id="section-password" class="tab-section">
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><div class="dot"></div>Change Password</div></div>
+        <div class="panel-body" style="max-width:380px;display:flex;flex-direction:column;gap:1rem;">
+          <div class="field"><label>Current Password</label><input type="password" id="pw-current" placeholder="••••••••"></div>
+          <div class="field"><label>New Password</label><input type="password" id="pw-new" placeholder="Min 6 characters"></div>
+          <div class="field"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Repeat new password"></div>
+          <button class="btn btn-primary" style="align-self:flex-start" onclick="changePassword()">🔑 Update Password</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SAVE BAR -->
+<div class="save-bar">
+  <div class="save-bar-info" id="save-bar-info">All changes saved to server automatically.</div>
+  <div>
+    <button class="btn btn-ghost" onclick="loadAll()">↺ Refresh</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ═══════════════════
+   CONFIG
+═══════════════════ */
+const ACCENTS = ['#C8FF00','#FF2D78','#8B5CF6','#FF6B00','#00D4FF','#22C55E','#FF3B3B','#F59E0B'];
+const EMOJIS  = ['👑','📦','✨','🪙','🛡️','🎁','⚔️','🗡️','🔮','🧪','🎯','🏆','💎','🔑','🌟','🎪'];
+const CAT_ICONS = ['🗂','👑','📦','✨','🪙','🛡️','🎁','⚔️','🗡️','🔮','🧪','🎯','🏆','💎','🔑','🌟','🎪','🏅','🎭','🎨','🎮','🚀','💥','🔥','❄️','⚡','🌈','💫','🎉','🎊','🎀','🦋','🐉','🦄','🍀','🎸','🎺','🎻','🥇','🏆'];
+let changelogData = [];
+let categoriesData = [];
+
+/* ═══════════════════
+   AUTH
+═══════════════════ */
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    if (d.authenticated) showApp(d.username);
+    else showLogin();
+  } catch { showLogin(); }
+}
+
+function showLogin() { document.getElementById('login-screen').classList.remove('hidden'); }
+function showApp(username) {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('topbar-username').textContent = '👤 ' + username;
+  loadAll();
+}
+
+async function doLogin() {
+  const btn  = document.getElementById('login-btn');
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-error');
+  if (!user || !pass) { showLoginErr('Enter username and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Checking…'; err.classList.remove('show');
+  try {
+    const r = await fetch('/api/auth/login', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: user, password: pass }) });
+    const d = await r.json();
+    if (r.ok) showApp(d.username);
+    else showLoginErr(d.error || 'Login failed.');
+  } catch { showLoginErr('Cannot reach server. Is it running?'); }
+  btn.disabled = false; btn.textContent = 'ENTER PANEL';
+}
+
+function showLoginErr(msg) {
+  const err = document.getElementById('login-error');
+  err.textContent = '⚠ ' + msg;
+  err.classList.add('show');
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
+  location.reload();
+}
+
+async function changePassword() {
+  const current = document.getElementById('pw-current').value;
+  const next    = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  if (!current || !next) return toast('Fill in all fields.', 'warn');
+  if (next !== confirm)  return toast('New passwords do not match.', 'error');
+  if (next.length < 6)   return toast('Password must be at least 6 chars.', 'error');
+  const r = await apiPOST('/api/auth/change-password', { currentPassword: current, newPassword: next });
+  if (r.ok) {
+    toast('Password updated ✓');
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+  } else {
+    toast((await r.json()).error || 'Failed', 'error');
+  }
+}
+
+/* ═══════════════════
+   API HELPERS
+═══════════════════ */
+async function apiGET(url)       { return fetch(url, { credentials: 'include' }); }
+async function apiPOST(url, body){ return fetch(url, { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }); }
+async function apiPUT(url, body) { return fetch(url, { method:'PUT',  credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }); }
+async function apiDEL(url)       { return fetch(url, { method:'DELETE', credentials:'include' }); }
+
+/* ═══════════════════
+   LOAD ALL
+═══════════════════ */
+async function loadAll() {
+  setSaveInfo('Loading from server…');
+  try {
+    const r = await apiGET('/api/admin/all');
+    if (r.status === 401) { showLogin(); return; }
+    const data = await r.json();
+    categoriesData = data.categories || [];
+    renderCategories();
+    renderProducts(data.products || []);
+    renderNews(data.news || []);
+    renderNavLinks(data.nav || []);
+    loadTicker(data.ticker || {});
+    loadHero(data.hero || {});
+    loadSettings(data.settings || {});
+    loadAnnouncement(data.announcement || {});
+    loadSidebarConfig(data.sidebar || {});
+    updateStats(data);
+    setSaveInfo('All changes saved to server automatically.');
+  } catch(e) {
+    setSaveInfo('⚠ Could not reach server.');
+  }
+}
+
+function updateStats(data) {
+  const products   = data.products || [];
+  const categories = data.categories || [];
+  document.getElementById('stat-cats').textContent    = categories.length;
+  document.getElementById('stat-cards').textContent   = products.length;
+  document.getElementById('stat-visible').textContent = products.filter(p=>p.visible).length;
+  document.getElementById('news-badge').textContent   = (data.news || []).length;
+}
+
+function setSaveInfo(msg) { document.getElementById('save-bar-info').innerHTML = msg; }
+
+/* ═══════════════════
+   SIDEBAR NAV
+═══════════════════ */
+function switchSection(id, el) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('visible');
+  el.classList.add('active');
+}
+
+/* ═══════════════════
+   CATEGORIES
+═══════════════════ */
+function renderCategories() {
+  const list = document.getElementById('category-list');
+  if (categoriesData.length === 0) {
+    list.innerHTML = `<p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);padding:1rem 0;">No categories yet. Add one to get started.</p>`;
+    return;
+  }
+  list.innerHTML = '';
+  categoriesData.forEach(cat => list.appendChild(buildCategoryRow(cat)));
+}
+
+function buildCategoryRow(cat) {
+  const defaultImg = 'https://via.placeholder.com/42/111118/C8FF00?text=?';
+  const div = document.createElement('div');
+  div.className = 'category-item';
+  div.dataset.id = cat.id;
+  div.innerHTML = `
+    <img src="${esc(cat.icon) || defaultImg}" class="cat-img-preview" onerror="this.src='${defaultImg}'" id="preview-${cat.id}">
+    <div class="field">
+      <label>Icon Image URL</label>
+      <input type="text" value="${esc(cat.icon)}" placeholder="https://..." onchange="patchCategory('${cat.id}','icon',this.value); document.getElementById('preview-${cat.id}').src=this.value || '${defaultImg}';">
+    </div>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" value="${esc(cat.name)}" onchange="patchCategory('${cat.id}','name',this.value)">
+    </div>
+    <div class="field">
+      <label>ID <span style="color:var(--muted);font-size:0.5rem;">(read-only)</span></label>
+      <input type="text" value="${esc(cat.id)}" readonly style="opacity:0.4;cursor:default;">
+    </div>
+    <div class="category-actions">
+      <button class="icon-btn danger" title="Delete category" onclick="deleteCategory('${cat.id}')">✕</button>
+    </div>`;
+  return div;
+}
+
+function toggleIconDropdown(catId) {
+  // Close all others first
+  document.querySelectorAll('.cat-icon-dropdown').forEach(dd => {
+    if (dd.id !== `icon-dd-${catId}`) dd.classList.remove('open');
+  });
+  document.getElementById(`icon-dd-${catId}`).classList.toggle('open');
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.category-icon-picker')) {
+    document.querySelectorAll('.cat-icon-dropdown').forEach(dd => dd.classList.remove('open'));
+  }
+});
+
+async function setCatIcon(catId, icon, dropdown) {
+  dropdown.classList.remove('open');
+  const row = document.querySelector(`.category-item[data-id="${catId}"]`);
+  row.querySelector('.cat-icon-display').textContent = icon;
+  const cat = categoriesData.find(c => c.id === catId);
+  if (cat) cat.icon = icon;
+  await patchCategory(catId, 'icon', icon);
+}
+
+async function patchCategory(id, field, value) {
+  const r = await apiPUT(`/api/admin/categories/${id}`, { [field]: value });
+  if (!r.ok) toast('Save failed', 'error');
+  else { toast('Saved ✓'); refreshStats(); }
+}
+
+async function addCategory() {
+  const defaultImg = 'https://via.placeholder.com/42/111118/C8FF00?text=+';
+  const r = await apiPOST('/api/admin/categories', { name: 'New Category', icon: defaultImg });
+  if (!r.ok) { toast('Failed to create category', 'error'); return; }
+  const cat = await r.json();
+  categoriesData.push(cat);
+  const list = document.getElementById('category-list');
+  if (list.querySelector('p')) list.innerHTML = '';
+  list.appendChild(buildCategoryRow(cat));
+  refreshStats();
+  toast('Category created ✓');
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Delete this category? Products assigned to it will become uncategorized.')) return;
+  const r = await apiDEL(`/api/admin/categories/${id}`);
+  if (r.ok) {
+    categoriesData = categoriesData.filter(c => c.id !== id);
+    document.querySelector(`.category-item[data-id="${id}"]`)?.remove();
+    if (document.querySelectorAll('.category-item').length === 0) {
+      document.getElementById('category-list').innerHTML = `<p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);padding:1rem 0;">No categories yet. Add one to get started.</p>`;
+    }
+    // Refresh products so their category dropdowns update
+    const allR = await apiGET('/api/admin/all');
+    if (allR.ok) { const d = await allR.json(); renderProducts(d.products || []); }
+    refreshStats();
+    toast('Category deleted', 'warn');
+  } else {
+    toast('Delete failed', 'error');
+  }
+}
+
+/* ═══════════════════
+   PRODUCTS
+═══════════════════ */
+function renderProducts(products) {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = '';
+  products.forEach(p => grid.appendChild(buildProductCard(p)));
+}
+
+function buildCategoryOptions(selectedId) {
+  const opts = categoriesData.map(cat =>
+    `<option value="${esc(cat.id)}" ${cat.id === selectedId ? 'selected' : ''}>${esc(cat.name)}</option>`
+  ).join('');
+  return `<option value="">— No category —</option>${opts}`;
+}
+
+function buildProductCard(p) {
+  const div = document.createElement('div');
+  div.className = 'product-editor';
+  div.dataset.id = p.id;
+  div.innerHTML = `
+    <div class="product-editor-header">
+      <span class="product-editor-id">${p.id}</span>
+      <div class="product-editor-actions">
+        <button class="icon-btn confirm" title="Duplicate" onclick="duplicateProduct('${p.id}')">⊕</button>
+        <button class="icon-btn danger" title="Delete" onclick="deleteProduct('${p.id}')">✕</button>
+      </div>
+    </div>
+    <div class="product-editor-body">
+      <div class="field-row">
+        <div class="field"><label>Name</label><input type="text" value="${esc(p.name)}" onchange="patchProduct('${p.id}','name',this.value)"></div>
+        <div class="field"><label>Price (USD)</label><input type="text" value="${esc(p.price)}" placeholder="0.00" onchange="patchProduct('${p.id}','price',this.value)"></div>
+      </div>
+      <div class="field"><label>Category</label>
+        <select onchange="patchProduct('${p.id}','category',this.value)">
+          ${buildCategoryOptions(p.category)}
+        </select>
+      </div>
+      <div class="field"><label>Description</label><textarea rows="3" onchange="patchProduct('${p.id}','desc',this.value)">${esc(p.desc)}</textarea></div>
+     <div class="field">
+        <label>Custom Icon URL</label>
+        <input type="text" value="${esc(p.icon || p.emoji)}" placeholder="https://..." onchange="patchProduct('${p.id}','icon',this.value)">
+      </div>
+      <div class="field"><label>Accent Color</label>
+        <div class="swatch-row">
+          ${ACCENTS.map(c=>`<div class="swatch ${c===p.accent?'selected':''}" style="background:${c}" onclick="patchProductAccent('${p.id}',this,'${c}')"></div>`).join('')}
+          <input type="text" style="width:90px;margin-left:auto;" value="${esc(p.accent)}" onchange="patchProduct('${p.id}','accent',this.value)">
+        </div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show "SOON" badge</span>
+        <div class="toggle ${p.soon?'on':''}" onclick="patchProductBool('${p.id}','soon',this)"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Visible on store</span>
+        <div class="toggle ${p.visible?'on':''}" onclick="patchProductBool('${p.id}','visible',this)"></div>
+      </div>
+    </div>`;
+  return div;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function patchProduct(id, field, value) {
+  const r = await apiPUT(`/api/admin/products/${id}`, { [field]: value });
+  if (!r.ok) toast('Save failed', 'error');
+  else { toast('Saved ✓'); refreshStats(); }
+}
+
+async function patchProductBool(id, field, el) {
+  el.classList.toggle('on');
+  await patchProduct(id, field, el.classList.contains('on'));
+}
+
+async function patchProductEmoji(id, el, emoji) {
+  el.closest('.emoji-grid').querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  await patchProduct(id, 'emoji', emoji);
+}
+
+async function patchProductAccent(id, el, hex) {
+  el.closest('.swatch-row').querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  const input = el.closest('.swatch-row').querySelector('input[type="text"]');
+  if (input) input.value = hex;
+  await patchProduct(id, 'accent', hex);
+}
+
+async function addProduct() {
+  const firstCat = categoriesData[0]?.id || '';
+  const r = await apiPOST('/api/admin/products', { category: firstCat });
+  if (!r.ok) { toast('Failed to create product', 'error'); return; }
+  const p = await r.json();
+  document.getElementById('product-grid').appendChild(buildProductCard(p));
+  refreshStats();
+  toast('New product created ✓');
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  const r = await apiDEL(`/api/admin/products/${id}`);
+  if (r.ok) {
+    document.querySelector(`.product-editor[data-id="${id}"]`)?.remove();
+    refreshStats();
+    toast('Product deleted', 'warn');
+  } else {
+    toast('Delete failed', 'error');
+  }
+}
+
+async function duplicateProduct(id) {
+ const card   = document.querySelector(`.product-editor[data-id="${id}"]`);
+  const inputs = card.querySelectorAll('input[type="text"]');
+  const name   = inputs[0]?.value + ' (copy)';
+  const price  = inputs[1]?.value;
+  const icon   = inputs[2]?.value; // Grabs the new Icon URL field
+  const cat    = card.querySelector('select')?.value || '';
+  const desc   = card.querySelector('textarea')?.value;
+  const accent = card.querySelector('.swatch.selected')?.style.background || '#C8FF00';
+  const soon   = card.querySelectorAll('.toggle')[0]?.classList.contains('on');
+  const vis    = card.querySelectorAll('.toggle')[1]?.classList.contains('on');
+  const r = await apiPOST('/api/admin/products', { name, price, desc, icon, accent, soon, visible: vis, category: cat });
+  if (!r.ok) { toast('Duplicate failed', 'error'); return; }
+  const p = await r.json();
+  document.getElementById('product-grid').appendChild(buildProductCard(p));
+  refreshStats();
+  toast('Duplicated ✓');
+}
+
+/* ═══════════════════
+   NEWS (SMALL POSTS)
+═══════════════════ */
+function renderNews(news) {
+  const list = document.getElementById('news-list');
+  list.innerHTML = '';
+  news.forEach(n => list.appendChild(buildNewsItem(n)));
+}
+
+function buildNewsItem(n) {
+  const div = document.createElement('div');
+  div.className = 'news-item';
+  div.dataset.id = n.id;
+  div.innerHTML = `
+    <div class="news-drag-handle">⠿</div>
+    <div class="news-fields">
+      <div class="field full"><label>Title</label><input type="text" value="${esc(n.title)}" onchange="patchNews('${n.id}','title',this.value)"></div>
+      <div class="field"><label>Tag</label><input type="text" value="${esc(n.tag)}" onchange="patchNews('${n.id}','tag',this.value)"></div>
+      <div class="field"><label>Date</label><input type="text" value="${esc(n.date)}" onchange="patchNews('${n.id}','date',this.value)"></div>
+      <div class="field full"><label>Body / Excerpt</label><textarea rows="2" onchange="patchNews('${n.id}','desc',this.value)">${esc(n.desc)}</textarea></div>
+    </div>
+    <div class="news-actions">
+      <button class="icon-btn confirm" title="Duplicate" onclick="duplicateNews('${n.id}')">⊕</button>
+      <button class="icon-btn danger" title="Delete" onclick="deleteNews('${n.id}')">✕</button>
+    </div>`;
+  return div;
+}
+
+async function patchNews(id, field, value) {
+  const r = await apiPUT(`/api/admin/news/${id}`, { [field]: value });
+  if (r.ok) toast('Saved ✓');
+  else toast('Save failed', 'error');
+}
+
+async function addNews() {
+  const r = await apiPOST('/api/admin/news', {});
+  if (!r.ok) { toast('Failed', 'error'); return; }
+  const n = await r.json();
+  document.getElementById('news-list').appendChild(buildNewsItem(n));
+  refreshStats();
+  toast('New post created ✓');
+}
+
+async function deleteNews(id) {
+  if (!confirm('Delete this post?')) return;
+  const r = await apiDEL(`/api/admin/news/${id}`);
+  if (r.ok) {
+    document.querySelector(`.news-item[data-id="${id}"]`)?.remove();
+    refreshStats();
+    toast('Post deleted', 'warn');
+  } else {
+    toast('Delete failed', 'error');
+  }
+}
+
+async function duplicateNews(id) {
+  const row   = document.querySelector(`.news-item[data-id="${id}"]`);
+  const ins   = row.querySelectorAll('input[type="text"]');
+  const r = await apiPOST('/api/admin/news', { title: ins[0]?.value + ' (copy)', tag: ins[1]?.value, date: ins[2]?.value, desc: row.querySelector('textarea')?.value });
+  if (!r.ok) { toast('Failed', 'error'); return; }
+  document.getElementById('news-list').appendChild(buildNewsItem(await r.json()));
+  refreshStats();
+  toast('Duplicated ✓');
+}
+
+/* ═══════════════════
+   ANNOUNCEMENT
+═══════════════════ */
+function loadAnnouncement(ann) {
+  document.getElementById('ann-banner').value = ann.banner || '🎉';
+  document.getElementById('ann-tag').value    = ann.tag    || 'UPDATE';
+  document.getElementById('ann-date').value   = ann.date   || '';
+  document.getElementById('ann-title').value  = ann.title  || '';
+  document.getElementById('ann-desc').value   = ann.desc   || '';
+  document.getElementById('ann-link').value   = ann.link   || '';
+}
+
+async function saveAnnouncement() {
+  const body = { banner: document.getElementById('ann-banner').value, tag: document.getElementById('ann-tag').value, date: document.getElementById('ann-date').value, title: document.getElementById('ann-title').value, desc: document.getElementById('ann-desc').value, link: document.getElementById('ann-link').value };
+  const r = await apiPUT('/api/admin/announcement', body);
+  if (r.ok) toast('Announcement saved ✓');
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   SIDEBAR CONFIG
+═══════════════════ */
+function loadSidebarConfig(sb) {
+  document.getElementById('sb-season-pct').value  = sb.seasonPct  || 0;
+  document.getElementById('sb-season-text').value = sb.seasonText || '';
+  document.getElementById('sb-season-desc').value = sb.seasonDesc || '';
+  document.getElementById('sb-cta-title').value   = sb.ctaTitle   || '';
+  document.getElementById('sb-cta-desc').value    = sb.ctaDesc    || '';
+  document.getElementById('sb-cta-btn').value     = sb.ctaBtn     || '';
+  document.getElementById('sb-cta-link').value    = sb.ctaLink    || '';
+  changelogData = sb.changelog || [];
+  renderChangelogEditor();
+}
+
+function renderChangelogEditor() {
+  const list = document.getElementById('changelog-list-editor');
+  list.innerHTML = '';
+  changelogData.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:grid;grid-template-columns:1fr 2fr auto;gap:0.6rem;align-items:center;background:var(--void3);padding:0.6rem;border:1px solid var(--border);';
+    div.innerHTML = `
+      <input type="text" placeholder="Version / Date" value="${esc(c.version)}" oninput="changelogData[${i}].version=this.value">
+      <input type="text" placeholder="Changes / Desc" value="${esc(c.desc)}" oninput="changelogData[${i}].desc=this.value">
+      <button class="icon-btn danger" onclick="changelogData.splice(${i},1);renderChangelogEditor()">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+function addChangelogItem() { changelogData.push({ version:'', desc:'' }); renderChangelogEditor(); }
+
+async function saveSidebarConfig() {
+  const body = { seasonPct: Number(document.getElementById('sb-season-pct').value), seasonText: document.getElementById('sb-season-text').value, seasonDesc: document.getElementById('sb-season-desc').value, ctaTitle: document.getElementById('sb-cta-title').value, ctaDesc: document.getElementById('sb-cta-desc').value, ctaBtn: document.getElementById('sb-cta-btn').value, ctaLink: document.getElementById('sb-cta-link').value, changelog: changelogData };
+  const r = await apiPUT('/api/admin/sidebar', body);
+  if (r.ok) toast('Sidebar saved ✓');
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   NAV
+═══════════════════ */
+let navData = [];
+
+function renderNavLinks(nav) {
+  navData = nav;
+  const list = document.getElementById('nav-links-list');
+  list.innerHTML = '';
+  nav.forEach((l, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:0.6rem;align-items:center;';
+    div.innerHTML = `
+      <div class="field"><label>Label</label><input type="text" value="${esc(l.label)}" oninput="navData[${i}].label=this.value"></div>
+      <div class="field"><label>href</label><input type="text" value="${esc(l.href)}" oninput="navData[${i}].href=this.value"></div>
+      <button class="icon-btn danger" style="margin-top:1.1rem;" onclick="navData.splice(${i},1);renderNavLinks(navData)">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+function addNavLink() { navData.push({ label:'Link', href:'#' }); renderNavLinks(navData); }
+
+async function saveNav() {
+  const r = await apiPUT('/api/admin/nav', navData);
+  if (r.ok) toast('Nav saved ✓');
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   TICKER
+═══════════════════ */
+function loadTicker(t) {
+  document.getElementById('ticker-text').value  = t.text  || '';
+  document.getElementById('ticker-bg').value    = t.bg    || '#C8FF00';
+  document.getElementById('ticker-color').value = t.color || '#0A0A0F';
+  document.getElementById('ticker-speed').value = t.speed || 22;
+  document.getElementById('ticker-visible-toggle').classList.toggle('on', !!t.visible);
+}
+
+async function saveTicker() {
+  const body = { text: document.getElementById('ticker-text').value, bg: document.getElementById('ticker-bg').value, color: document.getElementById('ticker-color').value, speed: Number(document.getElementById('ticker-speed').value), visible: document.getElementById('ticker-visible-toggle').classList.contains('on') };
+  const r = await apiPUT('/api/admin/ticker', body);
+  if (r.ok) toast('Ticker saved ✓');
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   HERO
+═══════════════════ */
+function loadHero(hero) {
+  const s = hero.store || {};
+  document.getElementById('store-eyebrow').value  = s.eyebrow     || '';
+  document.getElementById('store-title').value    = s.title       || '';
+  document.getElementById('store-accent').value   = s.titleAccent || '';
+  document.getElementById('store-subtitle').value = s.subtitle    || '';
+  const n = hero.news || {};
+  document.getElementById('news-eyebrow').value   = n.eyebrow     || '';
+  document.getElementById('news-title').value     = n.title       || '';
+  document.getElementById('news-accent').value    = n.titleAccent || '';
+  document.getElementById('news-subtitle').value  = n.subtitle    || '';
+}
+
+async function saveHero(page) {
+  const prefix = page === 'store' ? 'store' : 'news';
+  const body = { eyebrow: document.getElementById(prefix+'-eyebrow').value, title: document.getElementById(prefix+'-title').value, titleAccent: document.getElementById(prefix+'-accent').value, subtitle: document.getElementById(prefix+'-subtitle').value };
+  const r = await apiPUT(`/api/admin/hero/${page}`, body);
+  if (r.ok) toast(`${page} hero saved ✓`);
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   SETTINGS
+═══════════════════ */
+function loadSettings(s) {
+  document.getElementById('setting-title').value = s.siteTitle || '';
+  document.getElementById('toggle-maintenance').classList.toggle('on', !!s.maintenanceMode);
+  document.getElementById('toggle-store-visible').classList.toggle('on', !!s.storeVisible);
+}
+
+async function saveSettings() {
+  const body = { siteTitle: document.getElementById('setting-title').value, maintenanceMode: document.getElementById('toggle-maintenance').classList.contains('on'), storeVisible: document.getElementById('toggle-store-visible').classList.contains('on') };
+  const r = await apiPUT('/api/admin/settings', body);
+  if (r.ok) toast('Settings saved ✓');
+  else toast('Save failed', 'error');
+}
+
+/* ═══════════════════
+   REFRESH STATS
+═══════════════════ */
+async function refreshStats() {
+  const r = await apiGET('/api/admin/all');
+  if (!r.ok) return;
+  updateStats(await r.json());
+}
+
+/* ═══════════════════
+   TOAST
+═══════════════════ */
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type==='warn'?' warn':type==='error'?' error':'');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity 0.3s'; t.style.opacity='0'; }, 2200);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+/* ═══════════════════
+   INIT
+═══════════════════ */
+checkAuth();
+</script>
+</body>
+</html>

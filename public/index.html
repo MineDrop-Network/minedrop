@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MineDrop — Steal the Brainrot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lime: #C8FF00;
+      --orange: #FF6B00;
+      --purple: #8B5CF6;
+      --pink: #FF2D78;
+      --void: #0A0A0F;
+      --void2: #111118;
+      --void3: #1A1A26;
+      --white: #F0F0F0;
+      --muted: #6B6B8A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* PIXEL FONT */
+    .pixel { font-family: 'Press Start 2P', monospace; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,255,0,0.1);
+    }
+
+    .nav-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
+      color: var(--lime);
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 20px rgba(200,255,0,0.5);
+      text-decoration: none;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--lime); }
+    .nav-links a.active { color: var(--lime); }
+
+    .nav-cta {
+      background: var(--lime);
+      color: var(--void);
+      border: none;
+      padding: 0.6rem 1.4rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
+    .nav-cta:hover { transform: scale(1.05); background: #d9ff33; }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 6rem 2rem 4rem;
+    }
+
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      color: var(--orange);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s ease forwards;
+    }
+
+    .hero-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      line-height: 1.4;
+      color: var(--white);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.4s ease forwards;
+    }
+
+    .hero-title .accent-lime { color: var(--lime); }
+    .hero-title .accent-orange { color: var(--orange); }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.6s ease forwards;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.8s ease forwards;
+    }
+
+    .btn-primary {
+      background: var(--lime);
+      color: var(--void);
+      border: none;
+      padding: 1rem 2.2rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    }
+    .btn-primary:hover { transform: translateY(-2px) scale(1.03); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(240,240,240,0.2);
+      padding: 1rem 2.2rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* TICKER */
+    .ticker {
+      background: var(--lime);
+      color: var(--void);
+      padding: 0.6rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 20s linear infinite;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: rgba(200,255,0,0.08);
+      border-top: 1px solid rgba(200,255,0,0.1);
+      border-bottom: 1px solid rgba(200,255,0,0.1);
+    }
+    .stat-cell {
+      background: var(--void);
+      padding: 2rem;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      color: var(--lime);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* SECTION */
+    section { padding: 6rem 2rem; }
+
+    .section-eyebrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--orange);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* HOW IT WORKS */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .how-card {
+      background: var(--void2);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s;
+      cursor: default;
+    }
+    .how-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent, var(--lime));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .how-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
+    .how-card:hover::before { transform: scaleX(1); }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .card-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.45rem;
+      color: var(--accent, var(--lime));
+      letter-spacing: 0.2em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .card-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      margin-bottom: 0.8rem;
+      line-height: 1.6;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .card-desc li { margin-left: 1rem; margin-bottom: 0.3rem; }
+
+    /* RARITIES */
+    .rarities-section { background: var(--void2); }
+
+    .rarity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+
+    .rarity-card {
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .rarity-card:hover { transform: scale(1.04); }
+    .rarity-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--rc, transparent);
+      opacity: 0.06;
+    }
+
+    .rarity-emoji { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; }
+    .rarity-name {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--rc, var(--white));
+    }
+    .rarity-mult {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* STEALTH SECTION */
+    .stealth-section {
+      background: var(--void);
+      position: relative;
+      overflow: hidden;
+    }
+    .stealth-section::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -10%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .stealth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      margin-top: 3rem;
+    }
+    @media (max-width: 700px) { .stealth-grid { grid-template-columns: 1fr; } }
+
+    .stealth-visual {
+      background: var(--void2);
+      border: 1px solid rgba(139,92,246,0.2);
+      padding: 2rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      line-height: 2;
+      color: rgba(200,255,0,0.6);
+    }
+    .stealth-visual .cmd { color: var(--purple); }
+    .stealth-visual .success { color: var(--lime); }
+    .stealth-visual .danger { color: var(--pink); }
+    .stealth-visual .blink {
+      animation: blink 1s step-end infinite;
+      color: var(--lime);
+    }
+
+    .stealth-features { list-style: none; }
+    .stealth-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .stealth-features li .feat-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+    /* CTA */
+    .cta-section {
+      background: var(--void2);
+      border-top: 1px solid rgba(200,255,0,0.1);
+      text-align: center;
+      padding: 8rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(200,255,0,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1rem, 3vw, 2rem);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .cta-ip {
+      display: inline-block;
+      background: var(--void);
+      border: 1px solid rgba(200,255,0,0.3);
+      padding: 0.8rem 2rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.9rem;
+      color: var(--lime);
+      margin: 2rem 0;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .cta-ip:hover { background: rgba(200,255,0,0.05); }
+
+    .cta-note { font-size: 0.8rem; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      background: var(--void);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 2rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      color: var(--lime);
+    }
+    .footer-note { font-size: 0.75rem; color: var(--muted); }
+
+    /* SCROLL ANIMATIONS */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* KEYFRAMES */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(20px); }
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Pixel counter */
+    .count-up { display: inline; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-links { display: none; }
+      .hero-title { font-size: 1.3rem; }
+      section { padding: 4rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">MineDrop</a>
+  <ul class="nav-links">
+    <li><a href="news.html">News</a></li>
+    <li><a href="rules.html">Rules</a></li>
+    <li><a href="store.html">Store</a></li>
+    <li><a href="discord.html">Discord</a></li>
+  </ul>
+  <button class="nav-cta" onclick="window.location.href='play.html'">PLAY NOW</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-eyebrow">🟩 Season 1 Now Live</div>
+
+  <h1 class="hero-title pixel">
+    Capture.<br>
+    <span class="accent-lime">Steal.</span><br>
+    <span class="accent-orange">Dominate.</span>
+  </h1>
+
+  <p class="hero-sub">
+    MineLings rain from the sky. You snatch 'em, place 'em, flex 'em.
+    Then someone sneaks into your base and steals your entire empire.
+    That's MineDrop.
+  </p>
+
+  <div class="hero-buttons">
+    <button class="btn-primary pixel" onclick="window.location.href='play.html'">JOIN SERVER</button>
+    <button class="btn-secondary pixel">WATCH TRAILER</button>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <span class="ticker-inner">
+    MINEDROP IS LIVE &nbsp;•&nbsp; CAPTURE RARES &nbsp;•&nbsp; RAID ENEMY BASES &nbsp;•&nbsp; PRESTIGE MINELING SPOTTED &nbsp;•&nbsp; SEASON 1 REWARDS &nbsp;•&nbsp; 10K PLAYERS ONLINE &nbsp;•&nbsp;
+    MINEDROP IS LIVE &nbsp;•&nbsp; CAPTURE RARES &nbsp;•&nbsp; RAID ENEMY BASES &nbsp;•&nbsp; PRESTIGE MINELING SPOTTED &nbsp;•&nbsp; SEASON 1 REWARDS &nbsp;•&nbsp; 10K PLAYERS ONLINE &nbsp;•&nbsp;
+  </span>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-cell reveal">
+    <span class="stat-number pixel" data-target="10482">0</span>
+    <span class="stat-label">Players Online</span>
+  </div>
+  <div class="stat-cell reveal">
+    <span class="stat-number pixel" data-target="247">0</span>
+    <span class="stat-label">MineLing Types</span>
+  </div>
+  <div class="stat-cell reveal">
+    <span class="stat-number pixel">99.9%</span>
+    <span class="stat-label">Uptime</span>
+  </div>
+  <div class="stat-cell reveal">
+    <span class="stat-number pixel" data-target="4831">0</span>
+    <span class="stat-label">Clans Active</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <span class="section-eyebrow reveal">How MineDrop Works</span>
+    <h2 class="section-title reveal">Six systems. One obsession.</h2>
+
+    <div class="how-grid">
+
+      <div class="how-card reveal" style="--accent: #C8FF00;">
+        <span class="card-icon">🎯</span>
+        <span class="card-num">01 — CAPTURE</span>
+        <div class="card-title">Capturing MineLings</div>
+        <div class="card-desc">
+          <ul>
+            <li>MineLings spawn on conveyor belts</li>
+            <li>Click mobs before they escape</li>
+            <li>Rarity tiers = different income value</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="how-card reveal" style="--accent: #FF6B00;">
+        <span class="card-icon">💰</span>
+        <span class="card-num">02 — ECONOMY</span>
+        <div class="card-title">Build Your Empire</div>
+        <div class="card-desc">
+          <ul>
+            <li>Place MineLings in your base</li>
+            <li>They generate passive coin income</li>
+            <li>Trade on the auction house</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="how-card reveal" style="--accent: #8B5CF6;">
+        <span class="card-icon">🥷</span>
+        <span class="card-num">03 — STEALTH</span>
+        <div class="card-title">Stealth System</div>
+        <div class="card-desc">
+          <ul>
+            <li>Zero traditional PvP combat</li>
+            <li>Sneak into enemy bases</li>
+            <li>Extract MineLings without being caught</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="how-card reveal" style="--accent: #FF2D78;">
+        <span class="card-icon">💥</span>
+        <span class="card-num">04 — EVENTS</span>
+        <div class="card-title">Destroyer Events</div>
+        <div class="card-desc">
+          <ul>
+            <li>Random monster raid waves</li>
+            <li>Enderman-style block stealing</li>
+            <li>Defend or lose everything</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="how-card reveal" style="--accent: #FFD700;">
+        <span class="card-icon">👑</span>
+        <span class="card-num">05 — PRESTIGE</span>
+        <div class="card-title">Prestige MineLings</div>
+        <div class="card-desc">
+          <ul>
+            <li>Absurdly rare drops</li>
+            <li>Massive passive income boosts</li>
+            <li>Server-wide flex announcements</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="how-card reveal" style="--accent: #00D4FF;">
+        <span class="card-icon">🌍</span>
+        <span class="card-num">06 — CLANS</span>
+        <div class="card-title">Clan Worlds</div>
+        <div class="card-desc">
+          <ul>
+            <li>Private clan worlds, 10 players max</li>
+            <li>Fully synced clan economy</li>
+            <li>Coordinated raids and defense</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RARITIES -->
+<section id="rarities" class="rarities-section">
+  <div class="container">
+    <span class="section-eyebrow reveal">MineLing Rarities</span>
+    <h2 class="section-title reveal">Every rarity. Different grind.</h2>
+
+    <div class="rarity-grid">
+      <div class="rarity-card reveal" style="--rc: #9CA3AF; background: rgba(156,163,175,0.05);">
+        <span class="rarity-emoji">🐾</span>
+        <span class="rarity-name">COMMON</span>
+        <span class="rarity-mult">×1 income</span>
+      </div>
+      <div class="rarity-card reveal" style="--rc: #22C55E; background: rgba(34,197,94,0.05);">
+        <span class="rarity-emoji">🌿</span>
+        <span class="rarity-name">UNCOMMON</span>
+        <span class="rarity-mult">×2.5 income</span>
+      </div>
+      <div class="rarity-card reveal" style="--rc: #3B82F6; background: rgba(59,130,246,0.05);">
+        <span class="rarity-emoji">💧</span>
+        <span class="rarity-name">RARE</span>
+        <span class="rarity-mult">×6 income</span>
+      </div>
+      <div class="rarity-card reveal" style="--rc: #A855F7; background: rgba(168,85,247,0.05);">
+        <span class="rarity-emoji">✨</span>
+        <span class="rarity-name">EPIC</span>
+        <span class="rarity-mult">×15 income</span>
+      </div>
+      <div class="rarity-card reveal" style="--rc: #F59E0B; background: rgba(245,158,11,0.05);">
+        <span class="rarity-emoji">🔥</span>
+        <span class="rarity-name">LEGENDARY</span>
+        <span class="rarity-mult">×40 income</span>
+      </div>
+      <div class="rarity-card reveal" style="--rc: #FF2D78; background: rgba(255,45,120,0.05); animation: float 3s ease-in-out infinite;">
+        <span class="rarity-emoji">💎</span>
+        <span class="rarity-name" style="color:#FF2D78;">PRESTIGE</span>
+        <span class="rarity-mult" style="color:#FF2D78;">×999 + global flex</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEALTH -->
+<section id="stealth" class="stealth-section">
+  <div class="container">
+    <span class="section-eyebrow reveal">Stealth System</span>
+    <h2 class="section-title reveal">No swords. Just skill.</h2>
+    <p class="reveal" style="color: var(--muted); max-width: 500px; line-height: 1.7; margin-top: 0.5rem;">
+      MineDrop has zero traditional PvP. Instead, you infiltrate.
+      You sneak. You read the base layout, time your entry, extract MineLings,
+      and escape before anyone notices.
+    </p>
+
+    <div class="stealth-grid">
+      <div class="stealth-visual reveal">
+        <div><span class="cmd">&gt; INITIATING STEALTH PROTOCOL...</span></div>
+        <div><span class="cmd">&gt; TARGET:</span> SkyKing's Base</div>
+        <div><span class="cmd">&gt; SCANNING</span> defenses...</div>
+        <div>&nbsp;&nbsp;[████████░░] 80%</div>
+        <div><span class="success">&gt; ENTRY POINT FOUND</span></div>
+        <div><span class="cmd">&gt; EXTRACTING</span> Legendary 🔥...</div>
+        <div><span class="success">&gt; SUCCESS! +40x income secured</span></div>
+        <div><span class="danger">&gt; ALARM TRIGGERED! RUN!</span></div>
+        <div>&gt; <span class="blink">█</span></div>
+      </div>
+
+      <ul class="stealth-features reveal">
+        <li>
+          <span class="feat-icon">🔍</span>
+          <span><strong style="color: var(--white);">Recon first.</strong> Scout enemy bases and identify where the high-value MineLings are placed before committing.</span>
+        </li>
+        <li>
+          <span class="feat-icon">⏱️</span>
+          <span><strong style="color: var(--white);">Time your entry.</strong> Bases have active and idle windows. Strike when the owner is offline or distracted.</span>
+        </li>
+        <li>
+          <span class="feat-icon">🎯</span>
+          <span><strong style="color: var(--white);">Precision extraction.</strong> Move too fast and alarms trigger. Move too slow and the owner logs on. Threading the needle is the skill.</span>
+        </li>
+        <li>
+          <span class="feat-icon">🛡️</span>
+          <span><strong style="color: var(--white);">Defend your stash.</strong> Lay traps, design confusing layouts, and set alarm tripwires to protect what you've built.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CLANS -->
+<section id="clans">
+  <div class="container">
+    <span class="section-eyebrow reveal">Clan Worlds</span>
+    <h2 class="section-title reveal">Ten players. One world. Total sync.</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 3rem;">
+      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+        <span class="card-icon">🌐</span>
+        <div class="card-title" style="font-size: 0.65rem;">Private Clan World</div>
+        <div class="card-desc">Your crew's own dimension. Invite only, fully isolated from outside raids.</div>
+      </div>
+      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+        <span class="card-icon">👥</span>
+        <div class="card-title" style="font-size: 0.65rem;">Up to 10 Members</div>
+        <div class="card-desc">Every member contributes to the clan's shared income pool and economy.</div>
+      </div>
+      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+        <span class="card-icon">🔄</span>
+        <div class="card-title" style="font-size: 0.65rem;">Synced Economy</div>
+        <div class="card-desc">MineLings placed by any member all generate for the whole clan. United grind, united gains.</div>
+      </div>
+      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+        <span class="card-icon">⚔️</span>
+        <div class="card-title" style="font-size: 0.65rem;">Clan Wars</div>
+        <div class="card-desc">Declare war on rival clans and coordinate mass raids against their combined bases.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="play" class="cta-section">
+  <span class="section-eyebrow reveal" style="font-size: 0.5rem; letter-spacing: 0.3em; color: var(--orange);">READY TO DROP IN?</span>
+  <h2 class="cta-title pixel reveal">Your MineLings<br>won't catch themselves.</h2>
+  <p class="reveal" style="color: var(--muted); margin-top: 0.5rem;">Java Edition • Minecraft 1.20+</p>
+  <br>
+  <button class="btn-primary pixel reveal" onclick="window.location.href='play.html'">HOW TO JOIN →</button>
+  <p class="cta-note reveal" style="margin-top: 1.5rem;">Free to join • No pay-to-win • Season resets every 90 days</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MineDrop</div>
+  <p class="footer-note">Not affiliated with Mojang or Microsoft. MineDrop © 2025.</p>
+  <p class="footer-note" style="color: rgba(107,107,138,0.5);">Discord • Twitter • YouTube</p>
+</footer>
+
+<script>
+  /* ---- HERO CANVAS: falling pixel MineLings ---- */
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const EMOJIS = ['🐾','🌿','💧','✨','🔥','💎','⭐','🪄','🌀','💫'];
+  const particles = Array.from({length: 50}, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight - window.innerHeight,
+    emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+    speed: 0.5 + Math.random() * 1.5,
+    size: 14 + Math.floor(Math.random() * 18),
+    opacity: 0.2 + Math.random() * 0.6,
+    sway: (Math.random() - 0.5) * 0.5,
+    angle: 0
+  }));
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of particles) {
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      ctx.font = `${p.size}px serif`;
+      ctx.fillText(p.emoji, p.x, p.y);
+      ctx.restore();
+      p.y += p.speed;
+      p.x += p.sway;
+      p.angle += 0.01;
+      if (p.y > canvas.height + 40) {
+        p.y = -40;
+        p.x = Math.random() * canvas.width;
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  /* ---- SCROLL REVEAL ---- */
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  /* ---- COUNT UP ---- */
+  function countUp(el, target, duration) {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { start = target; clearInterval(timer); }
+      el.textContent = Math.floor(start).toLocaleString();
+    }, 16);
+  }
+
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const target = parseInt(entry.target.dataset.target);
+        if (target) countUp(entry.target, target, 1500);
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-target]').forEach(el => statObserver.observe(el));
+
+  /* ---- SMOOTH CARD STAGGER ---- */
+  document.querySelectorAll('.how-card, .rarity-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 0.07) + 's';
+  });
+</script>
+</body>
+</html>

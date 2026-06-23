@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play — MineDrop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --lime: #C8FF00;
+            --orange: #FF6B00;
+            --purple: #8B5CF6;
+            --pink: #FF2D78;
+            --void: #0A0A0F;
+            --void2: #111118;
+            --void3: #1A1A26;
+            --white: #F0F0F0;
+            --muted: #6B6B8A;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .pixel { font-family: 'Press Start 2P', monospace; }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 3rem;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(200,255,0,0.1);
+        }
+
+        .nav-logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1rem;
+            color: var(--lime);
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 20px rgba(200,255,0,0.5);
+            text-decoration: none;
+        }
+
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--lime); }
+
+        .nav-cta {
+            background: var(--lime);
+            color: var(--void);
+            border: none;
+            padding: 0.6rem 1.4rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+        }
+        .nav-cta:hover { transform: scale(1.05); background: #d9ff33; }
+
+        /* TICKER */
+        .ticker {
+            background: var(--lime);
+            color: var(--void);
+            padding: 0.6rem 0;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 0;
+            padding-top: 4.4rem;
+        }
+        .ticker-inner {
+            display: inline-block;
+            animation: ticker 22s linear infinite;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.1em;
+        }
+        @keyframes ticker {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+
+        /* PAGE HERO */
+        .page-hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 800px; height: 400px;
+            background: radial-gradient(ellipse, rgba(200,255,0,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .page-eyebrow {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5rem;
+            color: var(--orange);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 1.2rem;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.2s ease forwards;
+        }
+
+        .page-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(1.4rem, 4vw, 2.6rem);
+            line-height: 1.4;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.4s ease forwards;
+        }
+        .page-title .accent-lime { color: var(--lime); }
+
+        .page-sub {
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.7;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* IP BOX */
+        .ip-section {
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+        }
+
+        .ip-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            background: var(--void2);
+            border: 1px solid rgba(200,255,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .ip-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45rem;
+            color: var(--muted);
+            background: var(--void3);
+            padding: 1.2rem 1rem;
+            border-right: 1px solid rgba(200,255,0,0.15);
+            white-space: nowrap;
+            letter-spacing: 0.1em;
+        }
+
+        .ip-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.75rem, 2.5vw, 1.1rem);
+            color: var(--lime);
+            padding: 1.2rem 1.5rem;
+            flex: 1;
+            text-align: left;
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 20px rgba(200,255,0,0.3);
+        }
+
+        .ip-copy-btn {
+            background: var(--lime);
+            color: var(--void);
+            border: none;
+            padding: 1.2rem 1.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .ip-copy-btn:hover { background: #d9ff33; }
+        .ip-copy-btn.copied { background: #22C55E; color: #fff; }
+
+        .ip-note {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 1rem;
+        }
+
+        .bedrock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            background: rgba(139,92,246,0.08);
+            border: 1px solid rgba(139,92,246,0.3);
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: var(--purple);
+        }
+        .bedrock-badge .pixel-tag {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45rem;
+            background: var(--purple);
+            color: var(--white);
+            padding: 0.3rem 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* STEPS */
+        .steps-section {
+            padding: 3rem 2rem 5rem;
+        }
+
+        .steps-container {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .steps-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .step-card {
+            background: var(--void2);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 2rem 1.6rem;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.25s;
+        }
+        .step-card.visible { opacity: 1; transform: translateY(0); }
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--lime);
+        }
+
+        .step-num {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.45rem;
+            color: var(--lime);
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        .step-icon { font-size: 2rem; display: block; margin-bottom: 0.8rem; }
+
+        .step-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            line-height: 1.6;
+            margin-bottom: 0.6rem;
+        }
+
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* REQUIREMENTS */
+        .req-section {
+            padding: 1rem 2rem 5rem;
+        }
+
+        .req-container {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .req-box {
+            background: linear-gradient(135deg, rgba(200,255,0,0.04), rgba(139,92,246,0.04));
+            border: 1px solid rgba(200,255,0,0.12);
+            padding: 2.2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 600px) { .req-box { grid-template-columns: 1fr; } }
+
+        .req-col-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            color: var(--lime);
+            letter-spacing: 0.15em;
+            margin-bottom: 1.2rem;
+            display: block;
+        }
+
+        .req-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        .req-list li {
+            font-size: 0.9rem;
+            color: var(--muted);
+            padding-left: 1.4rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        .req-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--lime);
+            font-size: 0.7rem;
+            top: 0.15rem;
+        }
+        .req-list li strong { color: var(--white); }
+
+        /* FOOTER */
+        footer {
+            background: var(--void2);
+            border-top: 1px solid rgba(200,255,0,0.08);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        .footer-logo {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.2rem;
+            color: var(--lime);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(200,255,0,0.4);
+        }
+        .footer-note {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.4rem;
+        }
+
+        @media (max-width: 600px) {
+            nav { padding: 1rem 1.2rem; }
+            .nav-links { display: none; }
+            .ip-box { flex-direction: column; }
+            .ip-label { border-right: none; border-bottom: 1px solid rgba(200,255,0,0.15); width: 100%; text-align: center; }
+            .ip-copy-btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="index.html" class="nav-logo">MineDrop</a>
+    <ul class="nav-links">
+        <li><a href="news.html">News</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="store.html">Store</a></li>
+        <li><a href="discord.html">Discord</a></li>
+    </ul>
+    <button class="nav-cta" onclick="window.location.href='play.html'" style="opacity:0.5; cursor:default;">PLAY NOW</button>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <span class="ticker-inner">
+    SEASON 1 LIVE &nbsp;•&nbsp; JAVA EDITION &nbsp;•&nbsp; 1.20+ &nbsp;•&nbsp; FREE TO JOIN &nbsp;•&nbsp; NO PAY-TO-WIN &nbsp;•&nbsp; COPY THE IP AND DROP IN &nbsp;•&nbsp;
+    SEASON 1 LIVE &nbsp;•&nbsp; JAVA EDITION &nbsp;•&nbsp; 1.20+ &nbsp;•&nbsp; FREE TO JOIN &nbsp;•&nbsp; NO PAY-TO-WIN &nbsp;•&nbsp; COPY THE IP AND DROP IN &nbsp;•&nbsp;
+  </span>
+</div>
+
+<!-- HERO -->
+<div class="page-hero">
+    <span class="page-eyebrow">🎮 Join the Server</span>
+    <h1 class="page-title pixel">Drop In. <span class="accent-lime">Right Now.</span></h1>
+    <p class="page-sub">Copy the IP, paste it into Minecraft, and you're in. It takes about 30 seconds. Here's everything you need.</p>
+</div>
+
+<!-- IP BOX -->
+<div class="ip-section">
+    <div class="ip-box" id="ip-box">
+        <span class="ip-label">SERVER IP</span>
+        <span class="ip-value">play.minedrop.net</span>
+        <button class="ip-copy-btn" id="copy-btn" onclick="copyIP()">📋 COPY IP</button>
+    </div>
+    <p class="ip-note">Java Edition only &nbsp;•&nbsp; Minecraft 1.20 and above</p>
+    <div class="bedrock-badge"><span class="pixel-tag">SOON</span> Bedrock Edition support is on the way</div>
+</div>
+
+<!-- STEPS -->
+<section class="steps-section">
+    <div class="steps-container">
+        <div class="steps-title">How to join in 4 steps</div>
+        <div class="steps-grid">
+
+            <div class="step-card">
+                <span class="step-num">STEP 01</span>
+                <span class="step-icon">🎮</span>
+                <div class="step-title">Launch Minecraft</div>
+                <p class="step-desc">Open Minecraft Java Edition 1.20 or later. Bedrock support is coming soon.</p>
+            </div>
+
+            <div class="step-card">
+                <span class="step-num">STEP 02</span>
+                <span class="step-icon">🌐</span>
+                <div class="step-title">Multiplayer Menu</div>
+                <p class="step-desc">From the main menu, click <strong style="color:var(--white)">Multiplayer</strong>, then click <strong style="color:var(--white)">Add Server</strong>.</p>
+            </div>
+
+            <div class="step-card">
+                <span class="step-num">STEP 03</span>
+                <span class="step-icon">📋</span>
+                <div class="step-title">Paste the IP</div>
+                <p class="step-desc">In the Server Address field, paste <strong style="color:var(--lime)">play.minedrop.net</strong> and give it any name you like.</p>
+            </div>
+
+            <div class="step-card">
+                <span class="step-num">STEP 04</span>
+                <span class="step-icon">🚀</span>
+                <div class="step-title">Drop In!</div>
+                <p class="step-desc">Hit <strong style="color:var(--white)">Done</strong>, select MineDrop from your server list, and click <strong style="color:var(--white)">Join Server</strong>. You're in.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- REQUIREMENTS -->
+<section class="req-section">
+    <div class="req-container">
+        <div class="req-box">
+            <div>
+                <span class="req-col-title">✅ Requirements</span>
+                <ul class="req-list">
+                    <li><strong>Minecraft Java Edition</strong> (Bedrock coming soon)</li>
+                    <li>Version <strong>1.20 or higher</strong></li>
+                    <li>A valid <strong>Mojang / Microsoft account</strong></li>
+                    <li>Stable internet connection</li>
+                </ul>
+            </div>
+            <div>
+                <span class="req-col-title">📋 Good to Know</span>
+                <ul class="req-list">
+                    <li>Completely <strong>free to join</strong> — no purchase needed beyond Minecraft itself</li>
+                    <li>No mods or resource packs required</li>
+                    <li>Season 1 resets every <strong>90 days</strong></li>
+                    <li>Need help? Join our <a href="discord.html" style="color:var(--purple);">Discord</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-logo">MineDrop</div>
+    <p class="footer-note">Not affiliated with Mojang or Microsoft. MineDrop © 2025.</p>
+    <p class="footer-note" style="color: rgba(107,107,138,0.5);">Discord • Twitter • YouTube</p>
+</footer>
+
+<script>
+    function copyIP() {
+        navigator.clipboard.writeText('play.minedrop.net').then(() => {
+            const btn = document.getElementById('copy-btn');
+            btn.textContent = '✓ COPIED!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '📋 COPY IP';
+                btn.classList.remove('copied');
+            }, 2500);
+        });
+    }
+
+    /* Scroll reveal */
+    const cards = document.querySelectorAll('.step-card');
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08 });
+    cards.forEach(c => obs.observe(c));
+</script>
+</body>
+</html>

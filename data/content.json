@@ -1,0 +1,159 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "name": "athul",
+      "desc": "Access exclusive VIP-only areas, get a custom chat prefix, priority queue entry, and extra kit slots.",
+      "price": "4.99",
+      "emoji": "👑",
+      "accent": "#C8FF00",
+      "soon": false,
+      "visible": true,
+      "category": "cat-mqpp02mau08v",
+      "icon": "data:image/jpeg;base64,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pZ2+tEIpqCpqXgtY7J7nqt9btLTyuBlad/FdBotPwQgEMC28VGyPGGhakqWilsiNs0pHFguapJR2mGAe6tkGABel0kctlpkLGjZq9ctvgvaLog8hgHRekRAEREB5cwOGCsWahjk6gLMRRQNLLY4JDuwFWhYYAdmALfqmFHFE2amK1RsOzVmxUjGdllYRTxQs8hoHRekVFJBVERAFaqMct+emFdVqZpcxwCh7ByTU9JDJNNSTYxG8OZg4PofgozX1FNbTw0ojaWkEADiyR456+q6Bq7T0lc4ywlzJR0Le6grtMVLXOMkbie5KwLxfy09Gp51RO7Xra11drhnneIpfdkhjaTwHuQPwrfVVdDT0X2skywloc1zBnIPRcZdSTW8loi6u4snss+03O5voH20XAxUjcktwOLhP3cnsqMmJxZZCSZKrnf7Nd6Koprux1NyyHRce7j13bjuD2WfpWy0lXRRVUQ4o5BkEjHTZRC1W+a6XalqRUNbw5EjXN2O3ULr1hoWUNFHAxznAZOT3JOVp8fHKLp9FWWSa0XKS2QxMGGjbyWcyJrRjAXsDCqttGaymFVEUgIiIAiIgCIiAIiIAiIgCIiAIiIChQKqIAiIgCIiAsyQNf1CxJbbC8e6MrYooaJsilw0xBUb8AWgl0Oz7TzY4xjuuk4HgqcA8FHGyeRE7dpxtM5ruHGFKKePltA8FcDQOgXpSlRFhERSQEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREB/9k="
+    },
+    {
+      "id": "p2",
+      "name": "Mystery Crate",
+      "desc": "One roll on our mystery loot table — rare items, cosmetics, and coins inside every crate.",
+      "price": "2.99",
+      "emoji": "🧪",
+      "accent": "#FF2D78",
+      "soon": false,
+      "visible": true,
+      "category": "cat-mqpp02mau08v"
+    },
+    {
+      "id": "p3",
+      "name": "Cosmetic Pack",
+      "desc": "A bundle of trails, hats, and particle effects to make your character stand out on the server.",
+      "price": "3.49",
+      "emoji": "✨",
+      "accent": "#8B5CF6",
+      "soon": false,
+      "visible": true,
+      "category": "cat-mqpp02mau08v"
+    },
+    {
+      "id": "p4",
+      "name": "Coin Bundle",
+      "desc": "500 MineDrop coins to spend in the in-game shop on items, upgrades, and boosts.",
+      "price": "1.99",
+      "emoji": "🪙",
+      "accent": "#FF6B00",
+      "soon": true,
+      "visible": true,
+      "category": "cat-mqpp02mau08v"
+    },
+    {
+      "id": "p5",
+      "name": "MVP Rank",
+      "desc": "Everything in VIP plus exclusive MVP cosmetics, double coin earn rate, and access to MVP-only events.",
+      "price": "9.99",
+      "emoji": "🛡️",
+      "accent": "#00D4FF",
+      "soon": true,
+      "visible": true,
+      "category": "cat-mqpp02mau08v"
+    },
+    {
+      "id": "p6",
+      "name": "Starter Bundle",
+      "desc": "The perfect new-player pack: beginner kit, 100 coins, a chat cosmetic, and 3 mystery crate spins.",
+      "price": "5.99",
+      "emoji": "🎁",
+      "accent": "#22C55E",
+      "soon": true,
+      "visible": true
+    },
+    {
+      "id": "pmqpnvxzdck4t",
+      "name": "New Product",
+      "desc": "Describe this item.",
+      "price": "0.00",
+      "emoji": "🎯",
+      "accent": "#C8FF00",
+      "soon": false,
+      "visible": true,
+      "category": "cat-mqpp02mau08v"
+    }
+  ],
+  "news": [
+    {
+      "id": "nmqpn8uwpxzay",
+      "title": "New Post",
+      "tag": "ANNOUNCEMENT",
+      "date": "2026-06-22",
+      "desc": "Write your post here."
+    }
+  ],
+  "nav": [
+    {
+      "label": "News",
+      "href": "news.html"
+    },
+    {
+      "label": "Rules",
+      "href": "rules.html"
+    },
+    {
+      "label": "Store",
+      "href": "store.html"
+    },
+    {
+      "label": "Discord",
+      "href": "discord.html"
+    }
+  ],
+  "hero": {
+    "store": {
+      "eyebrow": "🛒 MineDrop Store",
+      "title": "Gear Up & Support Us",
+      "titleAccent": "& Support Us",
+      "subtitle": "Ranks, crates, and cosmetics to enhance your MineDrop experience. Store is launching soon — here's a preview of what's coming."
+    },
+    "news": {
+      "eyebrow": "📰 MineDrop News",
+      "title": "Latest Updates",
+      "titleAccent": "Updates",
+      "subtitle": "Patch notes, announcements, and everything happening on the server."
+    }
+  },
+  "ticker": {
+    "text": "RANKS &nbsp;•&nbsp; CRATES &nbsp;•&nbsp; COSMETICS &nbsp;•&nbsp; COINS &nbsp;•&nbsp; SUPPORT THE SERVER &nbsp;•&nbsp; MORE COMING SOON &nbsp;•&nbsp;",
+    "bg": "#C8FF00",
+    "color": "#0A0A0F",
+    "speed": 22,
+    "visible": true
+  },
+  "settings": {
+    "siteTitle": "MineDrop",
+    "maintenanceMode": false,
+    "storeVisible": true
+  },
+  "announcement": {
+    "banner": "https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Minecraft_PC_Bundle_.Net_1170x500.jpg",
+    "tag": "UPDATE",
+    "date": "",
+    "title": "",
+    "desc": "",
+    "link": ""
+  },
+  "sidebar": {
+    "seasonPct": 10,
+    "seasonText": "",
+    "seasonDesc": "In Development",
+    "ctaTitle": "💬 Join the Discord",
+    "ctaDesc": "Get announcements the second they drop. First to know about events, giveaways, and sneak peeks.",
+    "ctaBtn": "JOIN NOW →",
+    "ctaLink": "discord.html",
+    "changelog": []
+  },
+  "categories": [
+    {
+      "id": "cat-mqpp02mau08v",
+      "name": "Rank",
+      "icon": ""
+    }
+  ]
+}
