@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MineDrop — Steal the Brainrot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,26 +13,28 @@
       --orange: #FF6B00;
       --purple: #8B5CF6;
       --pink: #FF2D78;
-      --void: #0A0A0F;
-      --void2: #111118;
-      --void3: #1A1A26;
-      --white: #F0F0F0;
-      --muted: #6B6B8A;
+      --bg: #0C0C0E;
+      --bg2: #111114;
+      --bg3: #18181D;
+      --white: #F2F2F4;
+      --muted: #5A5A72;
+      --border: rgba(255,255,255,0.07);
+      --radius: 12px;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--void);
+      background: var(--bg);
       color: var(--white);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* PIXEL FONT */
-    .pixel { font-family: 'Press Start 2P', monospace; }
+    .mono { font-family: 'Space Mono', monospace; }
 
-    /* NAV */
+    /* ── NAV ── */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -40,48 +42,54 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.2rem 3rem;
-      background: rgba(10,10,15,0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(200,255,0,0.1);
+      padding: 1.1rem 2.5rem;
+      background: rgba(12,12,14,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
 
     .nav-logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
       color: var(--lime);
-      letter-spacing: 0.05em;
-      text-shadow: 0 0 20px rgba(200,255,0,0.5);
       text-decoration: none;
+      letter-spacing: 0.04em;
     }
 
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
     .nav-links a {
       color: var(--muted);
       text-decoration: none;
       font-size: 0.85rem;
       font-weight: 500;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      transition: color 0.2s;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
     }
-    .nav-links a:hover { color: var(--lime); }
-    .nav-links a.active { color: var(--lime); }
+    .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+    .nav-links a.nav-store {
+      color: var(--lime);
+      border: 1px solid rgba(200,255,0,0.25);
+    }
+    .nav-links a.nav-store:hover { background: rgba(200,255,0,0.08); }
 
     .nav-cta {
       background: var(--lime);
-      color: var(--void);
+      color: var(--bg);
       border: none;
-      padding: 0.6rem 1.4rem;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
+      padding: 0.55rem 1.3rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 6px;
       cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
-      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+      letter-spacing: 0.03em;
+      transition: opacity 0.15s, transform 0.15s;
     }
-    .nav-cta:hover { transform: scale(1.05); background: #d9ff33; }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
 
-    /* HERO */
+    /* ── HERO ── */
     .hero {
       position: relative;
       min-height: 100vh;
@@ -91,279 +99,327 @@
       justify-content: center;
       text-align: center;
       overflow: hidden;
-      padding: 6rem 2rem 4rem;
+      padding: 7rem 2rem 5rem;
     }
 
     #hero-canvas {
       position: absolute;
       inset: 0;
       width: 100%; height: 100%;
-      opacity: 0.35;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* subtle radial glow behind hero text */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 30%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(200,255,0,0.07) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .hero-eyebrow {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.55rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
       color: var(--orange);
-      letter-spacing: 0.3em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.8rem;
+      padding: 0.35rem 0.9rem;
+      border: 1px solid rgba(255,107,0,0.25);
+      border-radius: 100px;
+      background: rgba(255,107,0,0.06);
       opacity: 0;
-      animation: fadeUp 0.6s 0.2s ease forwards;
+      animation: fadeUp 0.5s 0.2s ease forwards;
     }
 
     .hero-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(1.8rem, 5vw, 3.5rem);
-      line-height: 1.4;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
       color: var(--white);
-      margin-bottom: 1rem;
+      margin-bottom: 1.4rem;
       opacity: 0;
-      animation: fadeUp 0.6s 0.4s ease forwards;
+      animation: fadeUp 0.5s 0.35s ease forwards;
     }
 
     .hero-title .accent-lime { color: var(--lime); }
     .hero-title .accent-orange { color: var(--orange); }
 
     .hero-sub {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--muted);
-      max-width: 560px;
-      line-height: 1.7;
-      margin-bottom: 2.5rem;
+      max-width: 500px;
+      line-height: 1.75;
+      margin-bottom: 2.8rem;
+      font-weight: 400;
       opacity: 0;
-      animation: fadeUp 0.6s 0.6s ease forwards;
+      animation: fadeUp 0.5s 0.5s ease forwards;
     }
 
     .hero-buttons {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
       justify-content: center;
       opacity: 0;
-      animation: fadeUp 0.6s 0.8s ease forwards;
+      animation: fadeUp 0.5s 0.65s ease forwards;
     }
 
     .btn-primary {
       background: var(--lime);
-      color: var(--void);
+      color: var(--bg);
       border: none;
-      padding: 1rem 2.2rem;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.65rem;
+      padding: 0.85rem 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 8px;
       cursor: pointer;
-      transition: transform 0.15s;
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      letter-spacing: 0.03em;
+      transition: opacity 0.15s, transform 0.15s;
     }
-    .btn-primary:hover { transform: translateY(-2px) scale(1.03); }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
 
     .btn-secondary {
       background: transparent;
       color: var(--white);
-      border: 1px solid rgba(240,240,240,0.2);
-      padding: 1rem 2.2rem;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.65rem;
+      border: 1px solid var(--border);
+      padding: 0.85rem 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 8px;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
+      letter-spacing: 0.03em;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
 
-    /* TICKER */
+    /* ── TICKER ── */
     .ticker {
       background: var(--lime);
-      color: var(--void);
-      padding: 0.6rem 0;
+      color: var(--bg);
+      padding: 0.55rem 0;
       overflow: hidden;
       white-space: nowrap;
     }
     .ticker-inner {
       display: inline-block;
-      animation: ticker 20s linear infinite;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.55rem;
-      letter-spacing: 0.1em;
+      animation: ticker 22s linear infinite;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
     }
 
-    /* STATS */
+    /* ── STATS ── */
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1px;
-      background: rgba(200,255,0,0.08);
-      border-top: 1px solid rgba(200,255,0,0.1);
-      border-bottom: 1px solid rgba(200,255,0,0.1);
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     .stat-cell {
-      background: var(--void);
-      padding: 2rem;
+      background: var(--bg);
+      padding: 2.2rem 2rem;
       text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s;
     }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell:hover { background: var(--bg2); }
+
     .stat-number {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700;
       color: var(--lime);
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
     }
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 500;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
     }
 
-    /* SECTION */
+    /* ── SECTIONS ── */
     section { padding: 6rem 2rem; }
+    .container { max-width: 1080px; margin: 0 auto; }
 
     .section-eyebrow {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.5rem;
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
       color: var(--orange);
-      letter-spacing: 0.3em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      display: block;
       margin-bottom: 1rem;
     }
 
     .section-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(1rem, 2.5vw, 1.6rem);
-      line-height: 1.5;
+      font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
       margin-bottom: 1rem;
     }
 
-    .container { max-width: 1100px; margin: 0 auto; }
-
-    /* HOW IT WORKS */
+    /* ── HOW IT WORKS ── */
     .how-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
       margin-top: 3rem;
     }
 
     .how-card {
-      background: var(--void2);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--bg2);
       padding: 2rem;
       position: relative;
-      overflow: hidden;
-      transition: transform 0.25s, border-color 0.25s;
+      transition: background 0.2s;
       cursor: default;
     }
+    .how-card:hover { background: var(--bg3); }
+
+    /* accent left border on hover */
     .how-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
+      top: 0; left: 0; bottom: 0;
+      width: 2px;
       background: var(--accent, var(--lime));
-      transform: scaleX(0);
-      transform-origin: left;
+      transform: scaleY(0);
+      transform-origin: bottom;
       transition: transform 0.3s ease;
+      border-radius: 1px;
     }
-    .how-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
-    .how-card:hover::before { transform: scaleX(1); }
+    .how-card:hover::before { transform: scaleY(1); }
 
     .card-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 2rem;
+      margin-bottom: 1.1rem;
       display: block;
     }
     .card-num {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.45rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
       color: var(--accent, var(--lime));
-      letter-spacing: 0.2em;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.6rem;
       display: block;
+      opacity: 0.7;
     }
     .card-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
       margin-bottom: 0.8rem;
-      line-height: 1.6;
+      line-height: 1.4;
     }
     .card-desc {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.75;
     }
-    .card-desc li { margin-left: 1rem; margin-bottom: 0.3rem; }
+    .card-desc li { margin-left: 1rem; margin-bottom: 0.2rem; }
 
-    /* RARITIES */
-    .rarities-section { background: var(--void2); }
+    /* ── RARITIES ── */
+    .rarities-section { background: var(--bg2); }
 
     .rarity-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
       margin-top: 3rem;
     }
 
     .rarity-card {
       border: 1px solid rgba(255,255,255,0.06);
-      padding: 1.5rem 1rem;
+      border-radius: var(--radius);
+      padding: 1.6rem 1rem;
       text-align: center;
+      background: var(--bg3);
+      transition: transform 0.2s, border-color 0.2s;
+      cursor: default;
       position: relative;
       overflow: hidden;
-      transition: transform 0.2s;
     }
-    .rarity-card:hover { transform: scale(1.04); }
     .rarity-card::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: var(--rc, transparent);
-      opacity: 0.06;
+      background: radial-gradient(ellipse at 50% 0%, var(--rc, transparent) 0%, transparent 70%);
+      opacity: 0.12;
+      pointer-events: none;
     }
+    .rarity-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); }
 
-    .rarity-emoji { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; }
+    .rarity-emoji { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
     .rarity-name {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      font-weight: 700;
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.45rem;
       color: var(--rc, var(--white));
+      letter-spacing: 0.06em;
     }
     .rarity-mult {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: var(--muted);
+      font-weight: 500;
     }
 
-    /* STEALTH SECTION */
+    /* ── STEALTH ── */
     .stealth-section {
-      background: var(--void);
+      background: var(--bg);
       position: relative;
       overflow: hidden;
     }
     .stealth-section::before {
       content: '';
       position: absolute;
-      top: -50%; left: -10%;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+      top: -30%; left: -5%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(139,92,246,0.09) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .stealth-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4rem;
+      gap: 3.5rem;
       align-items: center;
       margin-top: 3rem;
     }
     @media (max-width: 700px) { .stealth-grid { grid-template-columns: 1fr; } }
 
     .stealth-visual {
-      background: var(--void2);
-      border: 1px solid rgba(139,92,246,0.2);
-      padding: 2rem;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.55rem;
+      background: var(--bg2);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
       line-height: 2;
-      color: rgba(200,255,0,0.6);
+      color: rgba(200,255,0,0.55);
+      overflow: hidden;
     }
     .stealth-visual .cmd { color: var(--purple); }
     .stealth-visual .success { color: var(--lime); }
@@ -378,18 +434,52 @@
       display: flex;
       align-items: flex-start;
       gap: 1rem;
-      padding: 1rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--border);
       font-size: 0.9rem;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
     }
-    .stealth-features li .feat-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .stealth-features li:last-child { border-bottom: none; }
+    .stealth-features li .feat-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
 
-    /* CTA */
+    /* ── CLANS ── */
+    .clans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 3rem;
+    }
+
+    .clan-card {
+      background: var(--bg2);
+      padding: 2rem;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .clan-card:hover { background: var(--bg3); }
+    .clan-card .card-icon { font-size: 1.8rem; margin-bottom: 0.9rem; }
+    .clan-card .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .clan-card .card-desc {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── CTA ── */
     .cta-section {
-      background: var(--void2);
-      border-top: 1px solid rgba(200,255,0,0.1);
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
       text-align: center;
       padding: 8rem 2rem;
       position: relative;
@@ -400,40 +490,25 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 800px; height: 400px;
-      background: radial-gradient(ellipse, rgba(200,255,0,0.06) 0%, transparent 70%);
+      width: 600px; height: 350px;
+      background: radial-gradient(ellipse, rgba(200,255,0,0.05) 0%, transparent 70%);
       pointer-events: none;
     }
 
     .cta-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(1rem, 3vw, 2rem);
-      line-height: 1.5;
-      margin-bottom: 1rem;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
     }
+    .cta-note { font-size: 0.82rem; color: var(--muted); }
 
-    .cta-ip {
-      display: inline-block;
-      background: var(--void);
-      border: 1px solid rgba(200,255,0,0.3);
-      padding: 0.8rem 2rem;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.9rem;
-      color: var(--lime);
-      margin: 2rem 0;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .cta-ip:hover { background: rgba(200,255,0,0.05); }
-
-    .cta-note { font-size: 0.8rem; color: var(--muted); }
-
-    /* FOOTER */
+    /* ── FOOTER ── */
     footer {
-      background: var(--void);
-      border-top: 1px solid rgba(255,255,255,0.05);
-      padding: 2rem 3rem;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 1.8rem 2.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -441,53 +516,47 @@
       gap: 1rem;
     }
     .footer-logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
       color: var(--lime);
     }
     .footer-note { font-size: 0.75rem; color: var(--muted); }
 
-    /* SCROLL ANIMATIONS */
+    /* ── REVEAL ── */
     .reveal {
       opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: translateY(20px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* KEYFRAMES */
+    /* ── KEYFRAMES ── */
     @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes ticker {
-      0% { transform: translateX(0); }
+      0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
     @keyframes blink {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+      50%       { opacity: 0; }
     }
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      50%       { transform: translateY(-8px); }
     }
 
-    /* Pixel counter */
-    .count-up { display: inline; }
-
-    /* Mobile */
+    /* ── MOBILE ── */
     @media (max-width: 600px) {
       nav { padding: 1rem 1.2rem; }
       .nav-links { display: none; }
-      .hero-title { font-size: 1.3rem; }
+      .hero-title { font-size: 2.4rem; }
       section { padding: 4rem 1.2rem; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat-cell:nth-child(2) { border-right: none; }
     }
   </style>
 </head>
@@ -499,8 +568,8 @@
   <ul class="nav-links">
     <li><a href="news.html">News</a></li>
     <li><a href="rules.html">Rules</a></li>
-    <li><a href="store.html">Store</a></li>
     <li><a href="discord.html">Discord</a></li>
+    <li><a href="store.html" class="nav-store">Store</a></li>
   </ul>
   <button class="nav-cta" onclick="window.location.href='play.html'">PLAY NOW</button>
 </nav>
@@ -511,10 +580,9 @@
 
   <div class="hero-eyebrow">🟩 Season 1 Now Live</div>
 
-  <h1 class="hero-title pixel">
+  <h1 class="hero-title">
     Capture.<br>
-    <span class="accent-lime">Steal.</span><br>
-    <span class="accent-orange">Dominate.</span>
+    <span class="accent-lime">Steal.</span>&nbsp;<span class="accent-orange">Dominate.</span>
   </h1>
 
   <p class="hero-sub">
@@ -524,8 +592,8 @@
   </p>
 
   <div class="hero-buttons">
-    <button class="btn-primary pixel" onclick="window.location.href='play.html'">JOIN SERVER</button>
-    <button class="btn-secondary pixel">WATCH TRAILER</button>
+    <button class="btn-primary" onclick="window.location.href='play.html'">JOIN SERVER →</button>
+    <button class="btn-secondary">WATCH TRAILER</button>
   </div>
 </div>
 
@@ -540,19 +608,19 @@
 <!-- STATS -->
 <div class="stats">
   <div class="stat-cell reveal">
-    <span class="stat-number pixel" data-target="10482">0</span>
+    <span class="stat-number mono" data-target="10482">0</span>
     <span class="stat-label">Players Online</span>
   </div>
   <div class="stat-cell reveal">
-    <span class="stat-number pixel" data-target="247">0</span>
+    <span class="stat-number mono" data-target="247">0</span>
     <span class="stat-label">MineLing Types</span>
   </div>
   <div class="stat-cell reveal">
-    <span class="stat-number pixel">99.9%</span>
+    <span class="stat-number mono">99.9%</span>
     <span class="stat-label">Uptime</span>
   </div>
   <div class="stat-cell reveal">
-    <span class="stat-number pixel" data-target="4831">0</span>
+    <span class="stat-number mono" data-target="4831">0</span>
     <span class="stat-label">Clans Active</span>
   </div>
 </div>
@@ -654,32 +722,32 @@
     <h2 class="section-title reveal">Every rarity. Different grind.</h2>
 
     <div class="rarity-grid">
-      <div class="rarity-card reveal" style="--rc: #9CA3AF; background: rgba(156,163,175,0.05);">
+      <div class="rarity-card reveal" style="--rc: #9CA3AF;">
         <span class="rarity-emoji">🐾</span>
         <span class="rarity-name">COMMON</span>
         <span class="rarity-mult">×1 income</span>
       </div>
-      <div class="rarity-card reveal" style="--rc: #22C55E; background: rgba(34,197,94,0.05);">
+      <div class="rarity-card reveal" style="--rc: #22C55E;">
         <span class="rarity-emoji">🌿</span>
         <span class="rarity-name">UNCOMMON</span>
         <span class="rarity-mult">×2.5 income</span>
       </div>
-      <div class="rarity-card reveal" style="--rc: #3B82F6; background: rgba(59,130,246,0.05);">
+      <div class="rarity-card reveal" style="--rc: #3B82F6;">
         <span class="rarity-emoji">💧</span>
         <span class="rarity-name">RARE</span>
         <span class="rarity-mult">×6 income</span>
       </div>
-      <div class="rarity-card reveal" style="--rc: #A855F7; background: rgba(168,85,247,0.05);">
+      <div class="rarity-card reveal" style="--rc: #A855F7;">
         <span class="rarity-emoji">✨</span>
         <span class="rarity-name">EPIC</span>
         <span class="rarity-mult">×15 income</span>
       </div>
-      <div class="rarity-card reveal" style="--rc: #F59E0B; background: rgba(245,158,11,0.05);">
+      <div class="rarity-card reveal" style="--rc: #F59E0B;">
         <span class="rarity-emoji">🔥</span>
         <span class="rarity-name">LEGENDARY</span>
         <span class="rarity-mult">×40 income</span>
       </div>
-      <div class="rarity-card reveal" style="--rc: #FF2D78; background: rgba(255,45,120,0.05); animation: float 3s ease-in-out infinite;">
+      <div class="rarity-card reveal" style="--rc: #FF2D78; animation: float 3s ease-in-out infinite;">
         <span class="rarity-emoji">💎</span>
         <span class="rarity-name" style="color:#FF2D78;">PRESTIGE</span>
         <span class="rarity-mult" style="color:#FF2D78;">×999 + global flex</span>
@@ -693,7 +761,7 @@
   <div class="container">
     <span class="section-eyebrow reveal">Stealth System</span>
     <h2 class="section-title reveal">No swords. Just skill.</h2>
-    <p class="reveal" style="color: var(--muted); max-width: 500px; line-height: 1.7; margin-top: 0.5rem;">
+    <p class="reveal" style="color: var(--muted); max-width: 480px; line-height: 1.75; margin-top: 0.5rem;">
       MineDrop has zero traditional PvP. Instead, you infiltrate.
       You sneak. You read the base layout, time your entry, extract MineLings,
       and escape before anyone notices.
@@ -715,19 +783,19 @@
       <ul class="stealth-features reveal">
         <li>
           <span class="feat-icon">🔍</span>
-          <span><strong style="color: var(--white);">Recon first.</strong> Scout enemy bases and identify where the high-value MineLings are placed before committing.</span>
+          <span><strong style="color: var(--white); font-weight: 600;">Recon first.</strong> Scout enemy bases and identify where high-value MineLings are placed before committing.</span>
         </li>
         <li>
           <span class="feat-icon">⏱️</span>
-          <span><strong style="color: var(--white);">Time your entry.</strong> Bases have active and idle windows. Strike when the owner is offline or distracted.</span>
+          <span><strong style="color: var(--white); font-weight: 600;">Time your entry.</strong> Bases have active and idle windows. Strike when the owner is offline or distracted.</span>
         </li>
         <li>
           <span class="feat-icon">🎯</span>
-          <span><strong style="color: var(--white);">Precision extraction.</strong> Move too fast and alarms trigger. Move too slow and the owner logs on. Threading the needle is the skill.</span>
+          <span><strong style="color: var(--white); font-weight: 600;">Precision extraction.</strong> Move too fast and alarms trigger. Move too slow and the owner logs on. Threading the needle is the skill.</span>
         </li>
         <li>
           <span class="feat-icon">🛡️</span>
-          <span><strong style="color: var(--white);">Defend your stash.</strong> Lay traps, design confusing layouts, and set alarm tripwires to protect what you've built.</span>
+          <span><strong style="color: var(--white); font-weight: 600;">Defend your stash.</strong> Lay traps, design confusing layouts, and set alarm tripwires to protect what you've built.</span>
         </li>
       </ul>
     </div>
@@ -740,25 +808,25 @@
     <span class="section-eyebrow reveal">Clan Worlds</span>
     <h2 class="section-title reveal">Ten players. One world. Total sync.</h2>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 3rem;">
-      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+    <div class="clans-grid">
+      <div class="clan-card reveal">
         <span class="card-icon">🌐</span>
-        <div class="card-title" style="font-size: 0.65rem;">Private Clan World</div>
+        <div class="card-title">Private Clan World</div>
         <div class="card-desc">Your crew's own dimension. Invite only, fully isolated from outside raids.</div>
       </div>
-      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+      <div class="clan-card reveal">
         <span class="card-icon">👥</span>
-        <div class="card-title" style="font-size: 0.65rem;">Up to 10 Members</div>
+        <div class="card-title">Up to 10 Members</div>
         <div class="card-desc">Every member contributes to the clan's shared income pool and economy.</div>
       </div>
-      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+      <div class="clan-card reveal">
         <span class="card-icon">🔄</span>
-        <div class="card-title" style="font-size: 0.65rem;">Synced Economy</div>
-        <div class="card-desc">MineLings placed by any member all generate for the whole clan. United grind, united gains.</div>
+        <div class="card-title">Synced Economy</div>
+        <div class="card-desc">MineLings placed by any member generate for the whole clan. United grind, united gains.</div>
       </div>
-      <div class="how-card reveal" style="--accent: #00D4FF; text-align: center;">
+      <div class="clan-card reveal">
         <span class="card-icon">⚔️</span>
-        <div class="card-title" style="font-size: 0.65rem;">Clan Wars</div>
+        <div class="card-title">Clan Wars</div>
         <div class="card-desc">Declare war on rival clans and coordinate mass raids against their combined bases.</div>
       </div>
     </div>
@@ -767,23 +835,23 @@
 
 <!-- CTA -->
 <section id="play" class="cta-section">
-  <span class="section-eyebrow reveal" style="font-size: 0.5rem; letter-spacing: 0.3em; color: var(--orange);">READY TO DROP IN?</span>
-  <h2 class="cta-title pixel reveal">Your MineLings<br>won't catch themselves.</h2>
-  <p class="reveal" style="color: var(--muted); margin-top: 0.5rem;">Java Edition • Minecraft 1.20+</p>
+  <span class="section-eyebrow reveal" style="letter-spacing: 0.2em; color: var(--orange);">READY TO DROP IN?</span>
+  <h2 class="cta-title reveal">Your MineLings<br>won't catch themselves.</h2>
+  <p class="reveal" style="color: var(--muted); margin-top: 0.5rem; font-size: 0.85rem;">Java Edition &nbsp;·&nbsp; Minecraft 1.20+</p>
   <br>
-  <button class="btn-primary pixel reveal" onclick="window.location.href='play.html'">HOW TO JOIN →</button>
-  <p class="cta-note reveal" style="margin-top: 1.5rem;">Free to join • No pay-to-win • Season resets every 90 days</p>
+  <button class="btn-primary reveal" onclick="window.location.href='play.html'" style="margin-top: 1rem;">HOW TO JOIN →</button>
+  <p class="cta-note reveal" style="margin-top: 1.5rem;">Free to join · No pay-to-win · Season resets every 90 days</p>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">MineDrop</div>
   <p class="footer-note">Not affiliated with Mojang or Microsoft. MineDrop © 2025.</p>
-  <p class="footer-note" style="color: rgba(107,107,138,0.5);">Discord • Twitter • YouTube</p>
+  <p class="footer-note" style="color: var(--muted);">Discord · Twitter · YouTube</p>
 </footer>
 
 <script>
-  /* ---- HERO CANVAS: falling pixel MineLings ---- */
+  /* ── HERO CANVAS ── */
   const canvas = document.getElementById('hero-canvas');
   const ctx = canvas.getContext('2d');
 
@@ -795,15 +863,14 @@
   window.addEventListener('resize', resize);
 
   const EMOJIS = ['🐾','🌿','💧','✨','🔥','💎','⭐','🪄','🌀','💫'];
-  const particles = Array.from({length: 50}, () => ({
+  const particles = Array.from({length: 40}, () => ({
     x: Math.random() * window.innerWidth,
     y: Math.random() * window.innerHeight - window.innerHeight,
     emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
-    speed: 0.5 + Math.random() * 1.5,
-    size: 14 + Math.floor(Math.random() * 18),
-    opacity: 0.2 + Math.random() * 0.6,
-    sway: (Math.random() - 0.5) * 0.5,
-    angle: 0
+    speed: 0.4 + Math.random() * 1.2,
+    size: 13 + Math.floor(Math.random() * 16),
+    opacity: 0.15 + Math.random() * 0.4,
+    sway: (Math.random() - 0.5) * 0.4,
   }));
 
   function drawParticles() {
@@ -816,7 +883,6 @@
       ctx.restore();
       p.y += p.speed;
       p.x += p.sway;
-      p.angle += 0.01;
       if (p.y > canvas.height + 40) {
         p.y = -40;
         p.x = Math.random() * canvas.width;
@@ -826,19 +892,18 @@
   }
   drawParticles();
 
-  /* ---- SCROLL REVEAL ---- */
-  const reveals = document.querySelectorAll('.reveal');
+  /* ── SCROLL REVEAL ── */
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
+    entries.forEach(entry => {
       if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), 80);
+        setTimeout(() => entry.target.classList.add('visible'), 60);
         observer.unobserve(entry.target);
       }
     });
   }, { threshold: 0.1 });
-  reveals.forEach(el => observer.observe(el));
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  /* ---- COUNT UP ---- */
+  /* ── COUNT UP ── */
   function countUp(el, target, duration) {
     let start = 0;
     const step = target / (duration / 16);
@@ -860,9 +925,9 @@
   }, { threshold: 0.5 });
   document.querySelectorAll('[data-target]').forEach(el => statObserver.observe(el));
 
-  /* ---- SMOOTH CARD STAGGER ---- */
-  document.querySelectorAll('.how-card, .rarity-card').forEach((card, i) => {
-    card.style.transitionDelay = (i * 0.07) + 's';
+  /* ── STAGGER CARDS ── */
+  document.querySelectorAll('.how-card, .rarity-card, .clan-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 0.06) + 's';
   });
 </script>
 </body>
